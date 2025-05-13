@@ -1,0 +1,91 @@
+import { NextResponse } from "next/server"
+import fs from "fs"
+import path from "path"
+
+// 名前リストのファイルパス
+const NAMES_FILE_PATH = path.join(process.cwd(), "data", "names.json")
+const REGISTERED_NAMES_FILE_PATH = path.join(process.cwd(), "data", "registered-names.json")
+
+// 名前リストの型定義
+interface NamesData {
+  names: string[]
+}
+
+// 登録済み名前の型定義
+interface RegisteredNamesData {
+  names: string[]
+}
+
+// ディレクトリが存在しない場合は作成
+function ensureDirectoryExists(filePath: string) {
+  const dirname = path.dirname(filePath)
+  if (!fs.existsSync(dirname)) {
+    fs.mkdirSync(dirname, { recursive: true })
+  }
+}
+
+// 名前リストの読み込み
+function readNamesData(): NamesData {
+  ensureDirectoryExists(NAMES_FILE_PATH)
+
+  if (!fs.existsSync(NAMES_FILE_PATH)) {
+    // サンプルデータを作成
+    const sampleData: NamesData = {
+      names: [
+        "工大太郎",
+        "工大花子",
+        "山田一郎",
+        "佐藤二郎",
+        "鈴木三郎",
+        "田中四郎",
+        "高橋五郎",
+        "伊藤六郎",
+        "渡辺七郎",
+        "小林八郎",
+        "加藤九郎",
+        "吉田十郎",
+        "山本次郎",
+        "中村三郎",
+        "石田四郎",
+      ],
+    }
+    fs.writeFileSync(NAMES_FILE_PATH, JSON.stringify(sampleData, null, 2))
+    return sampleData
+  }
+
+  const data = fs.readFileSync(NAMES_FILE_PATH, "utf8")
+  return JSON.parse(data) as NamesData
+}
+
+// 登録済み名前の読み込み
+function readRegisteredNames(): RegisteredNamesData {
+  ensureDirectoryExists(REGISTERED_NAMES_FILE_PATH)
+
+  if (!fs.existsSync(REGISTERED_NAMES_FILE_PATH)) {
+    const initialData: RegisteredNamesData = { names: [] }
+    fs.writeFileSync(REGISTERED_NAMES_FILE_PATH, JSON.stringify(initialData, null, 2))
+    return initialData
+  }
+
+  const data = fs.readFileSync(REGISTERED_NAMES_FILE_PATH, "utf8")
+  return JSON.parse(data) as RegisteredNamesData
+}
+
+export async function GET() {
+  try {
+    // 全ての名前を取得
+    const allNames = readNamesData().names
+
+    // 登録済みの名前を取得
+    const registeredNames = readRegisteredNames().names
+
+    // 利用可能な名前（登録されていない名前）を抽出
+    const availableNames = allNames.filter((name) => !registeredNames.includes(name))
+
+    return NextResponse.json({ names: availableNames })
+  } catch (error) {
+    console.error("Error fetching available names:", error)
+    return NextResponse.json({ error: "名前リストの取得に失敗しました" }, { status: 500 })
+  }
+}
+
