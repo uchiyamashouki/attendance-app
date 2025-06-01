@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>出欠記録フォーム</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      font-size: 16px;
+      padding: 15px;
+      margin: 0;
+      box-sizing: border-box;
+      max-width: 100%;
+      background-color: #f8f9fa;
+    }
+    h2 {
+      font-size: 22px;
+      color: #333;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      font-size: 16px;
+      display: block;
+      margin-bottom: 6px;
+      font-weight: bold;
+    }
+    input[type="text"], input[type="number"], input[type="password"] {
+      font-size: 16px;
+      padding: 12px;
+      width: 100%;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      box-sizing: border-box;
+      -webkit-appearance: none;
+    }
+    .radio-group {
+      margin: 10px 0;
+      display: flex;
+      justify-content: space-around;
+    }
+    .radio-group label {
+      font-weight: normal;
+      display: inline;
+      margin-left: 8px;
+      margin-right: 0;
+    }
+    .radio-option {
+      display: flex;
+      align-items: center;
+    }
+    input[type="radio"] {
+      transform: scale(1.5);
+      margin-right: 5px;
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #ddd;
+      border-radius: 50%;
+      outline: none;
+    }
+    input[type="radio"]:checked {
+      border: 2px solid #4CAF50;
+      background-color: #4CAF50;
+      box-shadow: inset 0 0 0 4px white;
+    }
+    button {
+      font-size: 18px;
+      padding: 15px 20px;
+      width: 100%;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 10px;
+      -webkit-appearance: none;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    button:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+    #message {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 8px;
+      font-weight: bold;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .success {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    .error {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+    .warning {
+      background-color: #fff3cd;
+      color: #856404;
+    }
+    .info {
+      background-color: #d1ecf1;
+      color: #0c5460;
+    }
+    .loading {
+      display: none;
+      text-align: center;
+      margin-top: 20px;
+    }
+    .spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #3498db;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 2s linear infinite;
+      margin: 0 auto;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .close-instruction {
+      margin-top: 20px;
+      font-size: 20px;
+      text-align: center;
+      font-weight: bold;
+      color: #333;
+      display: none;
+      padding: 15px;
+      background-color: #d4edda;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .user-info {
+      background-color: #e9ecef;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      display: none;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .user-info p {
+      margin: 0;
+      font-size: 16px;
+    }
+    .user-info .user-name {
+      font-weight: bold;
+      font-size: 18px;
+    }
+    .reset-button {
+      background-color: #6c757d;
+      color: white;
+      border: none;
+      padding: 10px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-top: 10px;
+      width: 100%;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .reset-button:hover {
+      background-color: #5a6268;
+    }
+    .registration-form {
+      display: none;
+      margin-top: 20px;
+      background-color: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    /* モーダルスタイル */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+    }
+    .modal-content {
+      background-color: #fefefe;
+      margin: 30% auto;
+      padding: 20px;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    .modal-title {
+      margin-top: 0;
+      color: #333;
+      font-size: 18px;
+      text-align: center;
+    }
+    .modal-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+    }
+    .modal-buttons button {
+      width: 48%;
+      padding: 12px 0;
+    }
+    .cancel-button {
+      background-color: #6c757d;
+    }
+    .cancel-button:hover {
+      background-color: #5a6268;
+    }
+    #attendanceForm {
+      background-color: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+  <h2>出欠記録フォーム</h2>
+  
+  <!-- ユーザー情報表示エリア -->
+  <div id="userInfo" class="user-info">
+    <p>登録ユーザー: <span id="registeredName" class="user-name"></span></p>
+    <p id="lastAttendanceInfo"></p>
+    <button id="resetUserBtn" class="reset-button" onclick="showPasswordModal()">別のユーザーとして登録</button>
+  </div>
+  
+  <!-- パスワードモーダル -->
+  <div id="passwordModal" class="modal">
+    <div class="modal-content">
+      <h3 class="modal-title">管理者パスワード</h3>
+      <div class="form-group">
+        <label for="adminPassword">パスワードを入力してください:</label>
+        <input type="password" id="adminPassword">
+      </div>
+      <div class="modal-buttons">
+        <button onclick="verifyPasswordAndReset()" class="confirm-button">確認</button>
+        <button onclick="closePasswordModal()" class="cancel-button">キャンセル</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 新規ユーザー登録フォーム -->
+  <div id="registrationForm" class="registration-form">
+    <div class="form-group">
+      <label for="registerName">氏名を登録してください（性と名にはスペース不要）:</label>
+      <input type="text" id="registerName" placeholder="例：工大太郎" required>
+    </div>
+    <button type="button" onclick="registerUser()">登録</button>
+  </div>
+  
+  <!-- 出欠記録フォーム -->
+  <form id="attendanceForm" action="https://docs.google.com/forms/d/e/1FAIpQLSegSTTLeL75exvNWpF2iEQqdP8nUC4p55TBLpjvPR1WGefBCA/formResponse" method="POST">
+    <div class="form-group">
+      <label for="name">氏名:</label>
+      <input type="text" name="entry.411119479" id="name" required>
+    </div>
+    
+    <div class="form-group">
+      <label>出欠記録:</label>
+      <div class="radio-group">
+        <div class="radio-option">
+          <input type="radio" id="start" name="entry.1823206220" value="開始" required>
+          <label for="start">開始</label>
+        </div>
+        <div class="radio-option">
+          <input type="radio" id="end" name="entry.1823206220" value="終了" required>
+          <label for="end">終了</label>
+        </div>
+      </div>
+    </div>
+    
+    <div class="form-group">
+      <label for="pitches">投球数 (任意):</label>
+      <input type="number" name="entry.114182324" id="pitches" placeholder="投球数" min="0">
+    </div>
+    
+    <!-- 位置情報 (非表示) -->
+    <input type="hidden" name="entry.1124427894" id="latitude">
+    <input type="hidden" name="entry.792823488" id="longitude">
+    
+    <!-- 送信ボタン -->
+    <button type="button" id="submitBtn" onclick="validateAndSubmit()">送信</button>
+  </form>
+  
+  <!-- 読み込み表示 -->
+  <div id="loading" class="loading">
+    <div class="spinner"></div>
+    <p>位置情報を取得中...</p>
+  </div>
+  
+  <!-- 記録完了メッセージ -->
+  <div id="message"></div>
+  
+  <!-- 閉じる指示 -->
+  <div id="closeInstruction" class="close-instruction">
+    このページを閉じてください
+  </div>
+
+  <script>
+    // 管理者パスワード
+    const ADMIN_PASSWORD = "Kodai1942!!";
+    
+    // ページ読み込み時の初期化
+    document.addEventListener('DOMContentLoaded', function() {
+      initializeUserData();
+    });
+    
+    // パスワードモーダルを表示
+    function showPasswordModal() {
+      document.getElementById('passwordModal').style.display = 'block';
+      document.getElementById('adminPassword').value = '';
+      document.getElementById('adminPassword').focus();
+    }
+    
+    // パスワードモーダルを閉じる
+    function closePasswordModal() {
+      document.getElementById('passwordModal').style.display = 'none';
+    }
+    
+    // パスワード確認とリセット
+    function verifyPasswordAndReset() {
+      const password = document.getElementById('adminPassword').value;
+      
+      if (password === ADMIN_PASSWORD) {
+        closePasswordModal();
+        resetUserData();
+      } else {
+        showMessage('パスワードが正しくありません', 'error');
+      }
+    }
+    
+    // ユーザーデータの初期化
+    function initializeUserData() {
+      const userData = getUserData();
+      
+      if (userData && userData.name) {
+        // 登録済みユーザーの場合
+        document.getElementById('registeredName').textContent = userData.name;
+        document.getElementById('userInfo').style.display = 'block';
+        document.getElementById('registrationForm').style.display = 'none';
+        document.getElementById('attendanceForm').style.display = 'block';
+        
+        // フォームに名前を設定して読み取り専用にする
+        const nameInput = document.getElementById('name');
+        nameInput.value = userData.name;
+        nameInput.readOnly = true;
+        
+        // 最終出欠記録情報を表示
+        updateLastAttendanceInfo(userData);
+        
+        // 出欠ボタンの状態を更新
+        updateAttendanceButtonState(userData);
+      } else {
+        // 未登録ユーザーの場合
+        document.getElementById('userInfo').style.display = 'none';
+        document.getElementById('registrationForm').style.display = 'block';
+        document.getElementById('attendanceForm').style.display = 'none';
+      }
+    }
+    
+    // 最終出欠記録情報を更新
+    function updateLastAttendanceInfo(userData) {
+      const infoElement = document.getElementById('lastAttendanceInfo');
+      let infoText = '';
+      
+      const today = new Date().toLocaleDateString();
+      
+      if (userData.lastStart && userData.lastStart.date === today) {
+        const time = userData.lastStart.time;
+        infoText += `本日の開始記録: ${time}`;
+      }
+      
+      if (userData.lastEnd && userData.lastEnd.date === today) {
+        if (infoText) infoText += '<br>';
+        const time = userData.lastEnd.time;
+        infoText += `本日の終了記録: ${time}`;
+      }
+      
+      if (!infoText) {
+        infoText = '本日の記録: なし';
+      }
+      
+      infoElement.innerHTML = infoText;
+    }
+    
+    // 出欠ボタンの状態を更新
+    function updateAttendanceButtonState(userData) {
+      const startRadio = document.getElementById('start');
+      const endRadio = document.getElementById('end');
+      const today = new Date().toLocaleDateString();
+      
+      // 本日すでに開始記録がある場合
+      if (userData.lastStart && userData.lastStart.date === today) {
+        startRadio.disabled = true;
+        startRadio.checked = false;
+        endRadio.checked = true;
+      }
+      
+      // 本日すでに終了記録がある場合
+      if (userData.lastEnd && userData.lastEnd.date === today) {
+        endRadio.disabled = true;
+        endRadio.checked = false;
+        startRadio.checked = true;
+      }
+      
+      // 両方記録済みの場合
+      if ((userData.lastStart && userData.lastStart.date === today) && 
+          (userData.lastEnd && userData.lastEnd.date === today)) {
+        document.getElementById('submitBtn').disabled = true;
+        showMessage('本日の出欠記録は既に完了しています', 'info');
+      }
+    }
+    
+    // ユーザー登録
+    function registerUser() {
+      const nameInput = document.getElementById('registerName');
+      const name = nameInput.value.trim();
+      
+      if (!name) {
+        showMessage('氏名を入力してください', 'error');
+        return;
+      }
+      
+      // ユーザーデータを保存
+      const userData = {
+        name: name,
+        registeredAt: new Date().toISOString()
+      };
+      
+      localStorage.setItem('attendanceUserData', JSON.stringify(userData));
+      
+      // 画面を更新
+      initializeUserData();
+      showMessage(`${name}さんとして登録しました`, 'success');
+    }
+    
+    // ユーザーデータのリセット
+    function resetUserData() {
+      localStorage.removeItem('attendanceUserData');
+      initializeUserData();
+      showMessage('登録情報をリセットしました', 'info');
+    }
+    
+    // ユーザーデータの取得
+    function getUserData() {
+      const data = localStorage.getItem('attendanceUserData');
+      return data ? JSON.parse(data) : null;
+    }
+    
+    // ユーザーデータの更新
+    function updateUserData(newData) {
+      const currentData = getUserData() || {};
+      const updatedData = { ...currentData, ...newData };
+      localStorage.setItem('attendanceUserData', JSON.stringify(updatedData));
+      return updatedData;
+    }
+    
+    // 出欠記録の保存
+    function saveAttendanceRecord(type) {
+      const now = new Date();
+      const date = now.toLocaleDateString();
+      const time = now.toLocaleTimeString();
+      
+      let updateData = {};
+      
+      if (type === '開始') {
+        updateData.lastStart = { date, time };
+      } else if (type === '終了') {
+        updateData.lastEnd = { date, time };
+      }
+      
+      const updatedUserData = updateUserData(updateData);
+      updateLastAttendanceInfo(updatedUserData);
+      updateAttendanceButtonState(updatedUserData);
+    }
+    
+    // フォームの検証と送信
+    function validateAndSubmit() {
+      console.log("フォーム検証開始");
+      
+      // 名前と出欠の検証
+      const name = document.getElementById('name').value;
+      console.log("名前:", name);
+      
+      // ラジオボタンの選択を確認
+      const attendanceRadio = document.querySelector('input[name="entry.1823206220"]:checked');
+      
+      if (!name.trim()) {
+        showMessage('氏名を入力してください', 'error');
+        return;
+      }
+      
+      if (!attendanceRadio) {
+        showMessage('出欠を選択してください', 'error');
+        return;
+      }
+      
+      const attendanceType = attendanceRadio.value;
+      
+      // 投球数の検証（入力されている場合）
+      const pitches = document.getElementById('pitches').value;
+      if (pitches && (isNaN(pitches) || parseInt(pitches) < 0)) {
+        showMessage('投球数は0以上の数値を入力してください', 'error');
+        return;
+      }
+      
+      // 位置情報の取得開始
+      showLoading(true);
+      getLocationAndCheck(attendanceType);
+    }
+    
+    // 位置情報取得と範囲内外チェック関数
+    function getLocationAndCheck(attendanceType) {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+          var lat = position.coords.latitude;
+          var lon = position.coords.longitude;
+
+          // 茜浜球場の座標
+          var targetLat = 35.662683;
+          var targetLon = 140.008933;
+          var threshold = 0.1; // 許容範囲 (約100m)
+
+          // 2点間の距離を計算（Haversine式）
+          var distance = calculateDistance(lat, lon, targetLat, targetLon);
+          
+          showLoading(false);
+          
+          if (distance > threshold) {
+            showMessage(`位置情報が正しくありません。茜浜球場付近からアクセスしてください。現在地は球場から約${Math.round(distance * 1000)}m離れています。`, 'error');
+          } else {
+            // 位置情報が正しい場合、フォームに送信
+            document.getElementById('latitude').value = lat;
+            document.getElementById('longitude').value = lon;
+            
+            // フォーム送信
+            submitForm(attendanceType);
+          }
+        }, function(error) {
+          showLoading(false);
+          handleGeolocationError(error);
+        }, {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
+        });
+      } else {
+        showLoading(false);
+        showMessage("お使いのブラウザは位置情報取得をサポートしていません", 'error');
+      }
+    }
+
+    // フォーム送信処理
+    function submitForm(attendanceType) {
+      const form = document.getElementById('attendanceForm');
+      
+      // FormDataオブジェクトを使用してフォームデータを取得
+      const formData = new FormData(form);
+      
+      // デバッグ用：送信前のフォームデータを確認
+      console.log("送信するデータ:");
+      for (let pair of formData.entries()) {
+        console.log(pair[0] + ': ' + pair[1]);
+      }
+      
+      // URLSearchParamsオブジェクトに変換
+      const searchParams = new URLSearchParams();
+      for (const pair of formData) {
+        searchParams.append(pair[0], pair[1]);
+      }
+      
+      // fetch APIを使用してフォームを送信（リダイレクトなし）
+      fetch(form.action, {
+        method: 'POST',
+        body: searchParams,
+        mode: 'no-cors', // Google Formsへのクロスオリジン送信に必要
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      })
+      .then(() => {
+        // 送信成功時の処理
+        showMessage("記録を完了しました！", 'success');
+        
+        // 出欠記録を保存
+        saveAttendanceRecord(attendanceType);
+        
+        // フォームを非表示にする
+        form.style.display = 'none';
+        
+        // 「このページを閉じてください」の指示を表示
+        document.getElementById('closeInstruction').style.display = 'block';
+      })
+      .catch(error => {
+        console.error('送信エラー:', error);
+        showMessage("送信中にエラーが発生しました。もう一度お試しください。", 'error');
+      });
+    }
+
+    // 位置情報エラーのハンドリング
+    function handleGeolocationError(error) {
+      switch(error.code) {
+        case error.PERMISSION_DENIED:
+          showMessage("位置情報の使用が許可されていません。ブラウザの設定で位置情報へのアクセスを許可してください。", 'error');
+          break;
+        case error.POSITION_UNAVAILABLE:
+          showMessage("位置情報が取得できません。屋外でもう一度お試しください。", 'error');
+          break;
+        case error.TIMEOUT:
+          showMessage("位置情報の取得がタイムアウトしました。もう一度お試しください。", 'error');
+          break;
+        default:
+          showMessage("位置情報の取得中にエラーが発生しました。", 'error');
+          break;
+      }
+    }
+
+    // 2点間の距離を計算（Haversine式）
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+      var R = 6371; // 地球の半径 (km)
+      var dLat = degreesToRadians(lat2 - lat1);
+      var dLon = degreesToRadians(lon2 - lon1);
+      
+      var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+              Math.cos(degreesToRadians(lat1)) * Math.cos(degreesToRadians(lat2)) *
+              Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      
+      var distance = R * c; // 距離をkm単位で求める
+      return distance;
+    }
+
+    // 度をラジアンに変換
+    function degreesToRadians(degrees) {
+      return degrees * Math.PI / 180;
+    }
+    
+    // メッセージ表示関数
+    function showMessage(text, type) {
+      const messageDiv = document.getElementById('message');
+      messageDiv.textContent = text;
+      messageDiv.className = type;
+      messageDiv.style.display = 'block';
+      
+      // 8秒後にエラーメッセージを消す（成功メッセージは残す）
+      if (type === 'error' || type === 'warning' || type === 'info') {
+        setTimeout(() => {
+          messageDiv.style.display = 'none';
+        }, 8000);
+      }
+    }
+    
+    // ローディング表示の切り替え
+    function showLoading(show) {
+      document.getElementById('loading').style.display = show ? 'block' : 'none';
+      document.getElementById('submitBtn').disabled = show;
+    }
+    
+    // Enterキーでパスワード送信
+    document.getElementById('adminPassword').addEventListener('keyup', function(event) {
+      if (event.key === 'Enter') {
+        verifyPasswordAndReset();
+      }
+    });
+  </script>
+</body>
+</html>
