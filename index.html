@@ -8,32 +8,32 @@
 </head>
 <body>
   <h2>出欠記録フォーム</h2>
-  <!-- ユーザー情報表示エリアなど -->
-  <form id="attendanceForm">
-    <div class="form-group">
-      <label for="name">氏名:</label>
-      <input type="text" name="entry.411119479" id="name" required>
-    </div>
-    <div class="form-group">
-      <label>出欠記録:</label>
-      <div class="radio-group">
-        <div class="radio-option">
-          <input type="radio" id="start" name="entry.1823206220" value="開始" required>
-          <label for="start">開始</label>
-        </div>
-        <div class="radio-option">
-          <input type="radio" id="end" name="entry.1823206220" value="終了" required>
-          <label for="end">終了</label>
+
+  <div id="registrationForm" class="form-group">
+    <label for="registerName">氏名を登録してください（初回のみ）:</label>
+    <input type="text" id="registerName" placeholder="例：工大太郎">
+    <button id="registerBtn">登録</button>
+  </div>
+
+  <div id="userArea" style="display:none;">
+    <p id="welcomeMsg"></p>
+    <form id="attendanceForm">
+      <div class="form-group">
+        <label>出欠記録:</label>
+        <div class="radio-group">
+          <label><input type="radio" name="attendanceType" value="開始"> 開始</label>
+          <label><input type="radio" name="attendanceType" value="終了"> 終了</label>
         </div>
       </div>
-    </div>
-    <div class="form-group">
-      <label for="pitches">投球数 (任意):</label>
-      <input type="number" name="entry.114182324" id="pitches" placeholder="投球数" min="0">
-    </div>
-    <button type="button" id="submitBtn">送信</button>
-  </form>
-  <div id="message"></div>
+      <div class="form-group">
+        <label for="pitches">投球数 (任意):</label>
+        <input type="number" id="pitches" placeholder="投球数" min="0">
+      </div>
+      <button type="button" id="submitBtn">送信</button>
+    </form>
+    <div id="message"></div>
+  </div>
+
   <script src="js/main.js"></script>
 </body>
 </html>
