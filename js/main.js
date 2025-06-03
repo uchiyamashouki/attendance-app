@@ -32,6 +32,7 @@ document.addEventListener("DOMContentLoaded", function () {
     registrationForm.style.display = "none";
     userArea.style.display = "block";
     document.getElementById("welcomeMsg").textContent = userName + " さんで記録します";
+    document.getElementById("resetContainer").style.display = "block";
   }
 
   registerBtn.addEventListener("click", function () {
