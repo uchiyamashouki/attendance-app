@@ -21,6 +21,13 @@
       <div class="form-group" id="resetContainer" style="display:none;">
     <button id="resetBtn" style="background-color:#d9534f;color:white;">氏名をリセットする</button>
   </div>
+  <div id="passwordModal" style="display:none;">
+    <div class="form-group">
+      <label for="adminPassword">パスワードを入力してください:</label>
+      <input type="password" id="adminPassword">
+      <button id="confirmReset"style="background-color:#d9534f;color:white;">確認</button>
+    </div>
+  </div>
     
     <form id="attendanceForm">
       <div class="form-group">
@@ -40,14 +47,7 @@
   </div>
 
   <script src="js/main.js"></script>
-
-  <div id="passwordModal" style="display:none;">
-    <div class="form-group">
-      <label for="adminPassword">パスワードを入力してください:</label>
-      <input type="password" id="adminPassword">
-      <button id="confirmReset">確認</button>
-    </div>
-  </div>
+  
 </body>
 
 </html>
