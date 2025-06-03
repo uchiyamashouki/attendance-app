@@ -2,52 +2,36 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>出欠記録フォーム</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <link rel="stylesheet" href="css/style.css">
+  <title>顔認証出欠アプリ</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script defer src="https://cdn.jsdelivr.net/npm/face-api.js"></script>
+  <script defer src="js/face-recognition.js"></script>
+  <style>
+    body { font-family: sans-serif; padding: 1rem; text-align: center; }
+    video, canvas { width: 320px; height: 240px; }
+    #attendanceForm { display: none; margin-top: 1rem; }
+    #authStatus { font-weight: bold; margin: 1rem; }
+    button { padding: 0.5rem 1rem; margin: 0.5rem; }
+  </style>
 </head>
 <body>
-  <h2>出欠記録フォーム</h2>
-
-  <div id="registrationForm" class="form-group">
-    <label for="registerName">氏名を登録してください（初回のみ）:</label>
-    <input type="text" id="registerName" placeholder="例：工大太郎">
-    <button id="registerBtn">登録</button>
+  <h2>顔認証による出欠確認</h2>
+  <div>
+    <video id="video" autoplay muted></video>
+    <br>
+    <button onclick="registerFace()">顔を登録する</button>
+    <button onclick="authenticate()">認証して出欠する</button>
+    <div id="authStatus"></div>
   </div>
 
-  <div id="userArea" style="display:none;">
-    <p id="welcomeMsg"></p>
-
-      <div class="form-group" id="resetContainer" style="display:none;">
-    <button id="resetBtn" style="background-color:#d9534f;color:white;">氏名をリセットする</button>
-  </div>
-  <div id="passwordModal" style="display:none;">
-    <div class="form-group">
-      <label for="adminPassword">パスワードを入力してください:</label>
-      <input type="password" id="adminPassword">
-      <button id="confirmReset"style="background-color:#d9534f;color:white;">確認</button>
-    </div>
-  </div>
-    
-    <form id="attendanceForm">
-      <div class="form-group">
-        <label>出欠記録:</label>
-        <div class="radio-group">
-          <label><input type="radio" name="attendanceType" value="開始"> 開始</label>
-          <label><input type="radio" name="attendanceType" value="終了"> 終了</label>
-        </div>
-      </div>
-      <div class="form-group">
-        <label for="pitches">投球数 (任意):</label>
-        <input type="number" id="pitches" placeholder="投球数" min="0">
-      </div>
-      <button type="button" id="submitBtn">送信</button>
-    </form>
-    <div id="message"></div>
-  </div>
-
-  <script src="js/main.js"></script>
-  
+  <form id="attendanceForm">
+    <h3>出欠記録フォーム</h3>
+    <label>氏名: <input type="text" id="nameInput" required></label><br><br>
+    <label>
+      <input type="radio" name="status" value="開始" required> 開始
+      <input type="radio" name="status" value="終了"> 終了
+    </label><br><br>
+    <button type="submit">送信</button>
+  </form>
 </body>
-
 </html>
