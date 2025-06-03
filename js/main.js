@@ -28,11 +28,16 @@ document.addEventListener("DOMContentLoaded", function () {
   const today = new Date().toLocaleDateString();
   let records = JSON.parse(localStorage.getItem("attendanceRecords") || "{}");
 
-  if (userName) {
-    registrationForm.style.display = "none";
-    userArea.style.display = "block";
-    document.getElementById("welcomeMsg").textContent = userName + " さんで記録します";
-  }
+if (userName) {
+  registrationForm.style.display = "none";
+  userArea.style.display = "block";
+  document.getElementById("welcomeMsg").textContent = userName + " さんで記録します";
+
+  // ⬇ 安全に表示
+  const resetContainer = document.getElementById("resetContainer");
+  if (resetContainer) resetContainer.style.display = "block";
+}
+
 
   registerBtn.addEventListener("click", function () {
     const nameInput = document.getElementById("registerName").value.trim();
