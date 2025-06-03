@@ -17,46 +17,50 @@ document.addEventListener("DOMContentLoaded", function () {
     userArea.style.display = "block";
     document.getElementById("welcomeMsg").textContent = userName + " さんで記録します";
     document.getElementById("resetContainer").style.display = "block";
-
+  }
 
   registerBtn.addEventListener("click", function () {
     const nameInput = document.getElementById("registerName").value.trim();
     if (!nameInput) {
       showMessage("氏名を入力してください", "error");
       return;
-
+    }
     localStorage.setItem("userName", nameInput);
     location.reload();
-);
+  });
 
   resetBtn.addEventListener("click", () => passwordModal.style.display = "block");
+
   confirmReset.addEventListener("click", function () {
     const password = document.getElementById("adminPassword").value;
     if (password === "Kodai1942") {
       localStorage.removeItem("userName");
       location.reload();
- else {
+    } else {
       showMessage("パスワードが正しくありません", "error");
-
-);
+    }
+  });
 
   submitBtn.addEventListener("click", function () {
     checkLocation(async () => {
-    const attendanceType = document.querySelector("input[name='attendanceType']:checked");
-    if (!attendanceType) return showMessage("出欠を選択してください", "error");
+      const attendanceType = document.querySelector("input[name='attendanceType']:checked");
+      if (!attendanceType) return showMessage("出欠を選択してください", "error");
 
-    await runFaceRecognition(() => {
-      const recordList = records[today] || [];
-      if (recordList.length >= 3) return showMessage("本日は既に3回記録済みです", "error");
+      await runFaceRecognition(() => {
+        const recordList = records[today] || [];
+        if (recordList.length >= 3) return showMessage("本日は既に3回記録済みです", "error");
 
-      recordList.push({ type: attendanceType.value, time: new Date().toLocaleTimeString() 
-      records[today] = recordList;
-      localStorage.setItem("attendanceRecords", JSON.stringify(records));
-      showMessage("記録完了しました！", "success");
-  );
-);
+        recordList.push({ type: attendanceType.value, time: new Date().toLocaleTimeString() });
+        records[today] = recordList;
+        localStorage.setItem("attendanceRecords", JSON.stringify(records));
+        showMessage("記録完了しました！", "success");
+      });
+    });
+  });
 
   function showMessage(text, type) {
     message.className = "";
     message.textContent = text;
     message.classList.add(type === "success" ? "message-success" : "message-error");
+  }
+});
