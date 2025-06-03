@@ -44,14 +44,8 @@ document.addEventListener("DOMContentLoaded", function () {
         const lon = position.coords.longitude;
         const distance = calculateDistance(lat, lon, 35.662683, 140.008933);
 
-        if (distance > 0.1) {//0.1で100m
+        if (distance > 10) {//0.1で100m
           showMessage("球場から離れすぎています（" + Math.round(distance * 1000) + "m）", "error");
-          return;
-        }
-
-        const recordList = records[today] || [];
-        if (recordList.length >= 3) {
-          showMessage("本日は既に3回記録済みです", "error");
           return;
         }
 
