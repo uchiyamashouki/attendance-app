@@ -44,16 +44,17 @@ document.addEventListener("DOMContentLoaded", function () {
         const lon = position.coords.longitude;
         const distance = calculateDistance(lat, lon, 35.662683, 140.008933);
 
-        if (distance > 10) {//0.1で100m
+        if (distance > 10) {//デバックとして10㎞
           showMessage("球場から離れすぎています（" + Math.round(distance * 1000) + "m）", "error");
           return;
         }
-        
+
         const recordList = records[today] || [];
-        recordList.push({ type: attendanceType.value, time: new Date().toLocaleTimeString() });
-        records[today] = recordList;
-        localStorage.setItem("attendanceRecords", JSON.stringify(records));
-        
+        if (recordList.length >= 20) {//デバックとして20回
+          showMessage("本日は既に20回記録済みです", "error");
+          return;
+        }
+
         recordList.push({ type: attendanceType.value, time: new Date().toLocaleTimeString() });
         records[today] = recordList;
         localStorage.setItem("attendanceRecords", JSON.stringify(records));
