@@ -1,58 +1,90 @@
 
-let video = document.getElementById("video");
-let labeledDescriptor = null;
+document.addEventListener("DOMContentLoaded", function () {
+  const registrationForm = document.getElementById("registrationForm");
+  const userArea = document.getElementById("userArea");
+  const registerBtn = document.getElementById("registerBtn");
+  const submitBtn = document.getElementById("submitBtn");
+  const message = document.getElementById("message");
+  const resetBtn = document.getElementById("resetBtn");
+  const passwordModal = document.getElementById("passwordModal");
+  const confirmReset = document.getElementById("confirmReset");
 
-Promise.all([
-  faceapi.nets.tinyFaceDetector.loadFromUri("https://cdn.jsdelivr.net/npm/face-api.js/models"),
-  faceapi.nets.faceRecognitionNet.loadFromUri("https://cdn.jsdelivr.net/npm/face-api.js/models"),
-  faceapi.nets.faceLandmark68Net.loadFromUri("https://cdn.jsdelivr.net/npm/face-api.js/models")
-]).then(startVideo);
+  const userName = localStorage.getItem("userName");
+  const today = new Date().toLocaleDateString();
+  let records = JSON.parse(localStorage.getItem("attendanceRecords") || "{}");
 
-function startVideo() {
-  navigator.mediaDevices.getUserMedia({ video: true })
-    .then(stream => {
-      console.log("カメラ起動成功");
-      video.srcObject = stream;
-    })
-    .catch(err => console.error("カメラ起動エラー:", err));
-}
-
-
-async function registerFace() {
-  const detections = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
-  if (!detections) {
-    showStatus("顔が検出できません", false);
-    return;
-  }
-  localStorage.setItem("faceDescriptor", JSON.stringify(Array.from(detections.descriptor)));
-  showStatus("顔登録が完了しました", true);
-}
-
-async function authenticate() {
-  const stored = localStorage.getItem("faceDescriptor");
-  if (!stored) {
-    showStatus("顔が登録されていません", false);
-    return;
+  if (userName) {
+    registrationForm.style.display = "none";
+    userArea.style.display = "block";
+    document.getElementById("welcomeMsg").textContent = userName + " さんで記録します";
+    document.getElementById("resetContainer").style.display = "block";
   }
 
-  const storedDescriptor = new Float32Array(JSON.parse(stored));
-  const detections = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
-  if (!detections) {
-    showStatus("顔が検出できません", false);
-    return;
+  registerBtn.addEventListener("click", function () {
+    const nameInput = document.getElementById("registerName").value.trim();
+    if (!nameInput) {
+      showMessage("氏名を入力してください", "error");
+      return;
+    }
+    localStorage.setItem("userName", nameInput);
+    location.reload();
+  });
+
+  resetBtn.addEventListener("click", () => passwordModal.style.display = "block");
+  confirmReset.addEventListener("click", function () {
+    const password = document.getElementById("adminPassword").value;
+    if (password === "Kodai1942") {
+      localStorage.removeItem("userName");
+      location.reload();
+    } else {
+      showMessage("パスワードが正しくありません", "error");
+    }
+  });
+
+  submitBtn.addEventListener("click", async function () {
+    const attendanceType = document.querySelector("input[name='attendanceType']:checked");
+    if (!attendanceType) return showMessage("出欠を選択してください", "error");
+
+    await runFaceRecognition(() => {
+      const recordList = records[today] || [];
+      if (recordList.length >= 3) return showMessage("本日は既に3回記録済みです", "error");
+
+      recordList.push({ type: attendanceType.value, time: new Date().toLocaleTimeString() });
+      records[today] = recordList;
+      localStorage.setItem("attendanceRecords", JSON.stringify(records));
+      showMessage("記録完了しました！", "success");
+    });
+  });
+
+  function showMessage(text, type) {
+    message.className = "";
+    message.textContent = text;
+    message.classList.add(type === "success" ? "message-success" : "message-error");
   }
 
-  const distance = faceapi.euclideanDistance(detections.descriptor, storedDescriptor);
-  if (distance < 0.5) {
-    document.getElementById("attendanceForm").style.display = "block";
-    showStatus("認証成功！出欠記録できます", true);
-  } else {
-    showStatus("認証失敗：別人の可能性があります", false);
-  }
-}
+  async function runFaceRecognition(onSuccess) {
+    const modal = document.getElementById("faceModal");
+    modal.style.display = "flex";
+    const video = document.getElementById("video");
 
-function showStatus(msg, success) {
-  const status = document.getElementById("authStatus");
-  status.textContent = msg;
-  status.style.color = success ? "green" : "red";
-}
+    await faceapi.nets.tinyFaceDetector.loadFromUri("https://cdn.jsdelivr.net/npm/face-api.js/models");
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    video.srcObject = stream;
+
+    return new Promise(resolve => {
+      video.onloadedmetadata = () => {
+        video.play();
+        const interval = setInterval(async () => {
+          const result = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions());
+          if (result) {
+            clearInterval(interval);
+            stream.getTracks().forEach(track => track.stop());
+            modal.style.display = "none";
+            onSuccess();
+            resolve();
+          }
+        }, 800);
+      };
+    });
+  }
+});
