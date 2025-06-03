@@ -1,5 +1,23 @@
 
 document.addEventListener("DOMContentLoaded", function () {
+  const resetBtn = document.getElementById("resetBtn");
+  const passwordModal = document.getElementById("passwordModal");
+  const confirmReset = document.getElementById("confirmReset");
+
+  resetBtn.addEventListener("click", function () {
+    passwordModal.style.display = "block";
+  });
+
+  confirmReset.addEventListener("click", function () {
+    const password = document.getElementById("adminPassword").value;
+    if (password === "Kodai1942") {
+      localStorage.removeItem("userName");
+      location.reload();
+    } else {
+      showMessage("パスワードが正しくありません", "error");
+    }
+  });
+
   const registrationForm = document.getElementById("registrationForm");
   const userArea = document.getElementById("userArea");
   const registerBtn = document.getElementById("registerBtn");
