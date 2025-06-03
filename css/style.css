@@ -30,3 +30,7 @@ button {
   border-radius: 8px;
   cursor: pointer;
 }
+#message {
+  margin-top: 10px;
+  font-weight: bold;
+}
