@@ -1,66 +1,43 @@
-document.addEventListener("DOMContentLoaded", function () {
-  const registrationForm = document.getElementById("registrationForm");
-  const userArea = document.getElementById("userArea");
-  const registerBtn = document.getElementById("registerBtn");
-  const submitBtn = document.getElementById("submitBtn");
-  const message = document.getElementById("message");
-  const resetBtn = document.getElementById("resetBtn");
-  const passwordModal = document.getElementById("passwordModal");
-  const confirmReset = document.getElementById("confirmReset");
 
-  const userName = localStorage.getItem("userName");
-  const today = new Date().toLocaleDateString();
-  let records = JSON.parse(localStorage.getItem("attendanceRecords") || "{}");
+document.getElementById("submitBtn").addEventListener("click", async () => {
+  const username = document.getElementById("username").value.trim();
+  const category = document.querySelector('input[name="category"]:checked');
+  const throwingCount = document.getElementById("throwingCount").value.trim();
 
-  if (userName) {
-    registrationForm.style.display = "none";
-    userArea.style.display = "block";
-    document.getElementById("welcomeMsg").textContent = userName + " さんで記録します";
-    document.getElementById("resetContainer").style.display = "block";
+  if (!username || !category) {
+    alert("氏名と練習区分は必須です。");
+    return;
   }
 
-  registerBtn.addEventListener("click", function () {
-    const nameInput = document.getElementById("registerName").value.trim();
-    if (!nameInput) {
-      showMessage("氏名を入力してください", "error");
-      return;
-    }
-    localStorage.setItem("userName", nameInput);
-    location.reload();
-  });
+  const isValidLocation = await checkLocation();
+  if (!isValidLocation) return;
 
-  resetBtn.addEventListener("click", () => passwordModal.style.display = "block");
-
-  confirmReset.addEventListener("click", function () {
-    const password = document.getElementById("adminPassword").value;
-    if (password === "Kodai1942") {
-      localStorage.removeItem("userName");
-      location.reload();
-    } else {
-      showMessage("パスワードが正しくありません", "error");
-    }
-  });
-
-  submitBtn.addEventListener("click", function () {
-    checkLocation(async () => {
-      const attendanceType = document.querySelector("input[name='attendanceType']:checked");
-      if (!attendanceType) return showMessage("出欠を選択してください", "error");
-
-      await runFaceRecognition(() => {
-        const recordList = records[today] || [];
-        if (recordList.length >= 3) return showMessage("本日は既に3回記録済みです", "error");
-
-        recordList.push({ type: attendanceType.value, time: new Date().toLocaleTimeString() });
-        records[today] = recordList;
-        localStorage.setItem("attendanceRecords", JSON.stringify(records));
-        showMessage("記録完了しました！", "success");
-      });
-    });
-  });
-
-  function showMessage(text, type) {
-    message.className = "";
-    message.textContent = text;
-    message.classList.add(type === "success" ? "message-success" : "message-error");
+  const isAuthenticated = await performFaceAuth(username);
+  if (!isAuthenticated) {
+    alert("顔認証に失敗しました。再試行してください。");
+    return;
   }
+
+  const now = new Date();
+  const dateKey = now.toLocaleDateString("ja-JP");
+  const recordKey = `record_${dateKey}`;
+  const recordData = JSON.parse(localStorage.getItem(recordKey)) || [];
+
+  const todayRecords = recordData.filter(r => r.username === username);
+  if (todayRecords.length >= 2) {
+    alert("本日は既に2回記録されています。");
+    return;
+  }
+
+  recordData.push({
+    username,
+    category: category.value,
+    throwingCount: throwingCount || "0",
+    time: now.toLocaleTimeString("ja-JP")
+  });
+
+  localStorage.setItem(recordKey, JSON.stringify(recordData));
+
+  alert("記録を完了しました！");
+  document.getElementById("recordForm").reset();
 });
