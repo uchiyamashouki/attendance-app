@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", function () {
   if (userName) {
     registrationForm.style.display = "none";
     userArea.style.display = "block";
-    document.getElementById("welcomeMsg").textContent = userName + " さん、こんにちは！";
+    document.getElementById("welcomeMsg").textContent = userName + " さんで記録します";
   }
 
   registerBtn.addEventListener("click", function () {
@@ -44,7 +44,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const lon = position.coords.longitude;
         const distance = calculateDistance(lat, lon, 35.662683, 140.008933);
 
-        if (distance > 0.1) {
+        if (distance > 0.1) {//0.1で100m
           showMessage("球場から離れすぎています（" + Math.round(distance * 1000) + "m）", "error");
           return;
         }
