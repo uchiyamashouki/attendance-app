@@ -10,9 +10,13 @@ Promise.all([
 
 function startVideo() {
   navigator.mediaDevices.getUserMedia({ video: true })
-    .then(stream => { video.srcObject = stream; })
+    .then(stream => {
+      console.log("カメラ起動成功");
+      video.srcObject = stream;
+    })
     .catch(err => console.error("カメラ起動エラー:", err));
 }
+
 
 async function registerFace() {
   const detections = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
