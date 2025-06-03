@@ -48,7 +48,12 @@ document.addEventListener("DOMContentLoaded", function () {
           showMessage("球場から離れすぎています（" + Math.round(distance * 1000) + "m）", "error");
           return;
         }
-
+        
+        const recordList = records[today] || [];
+        recordList.push({ type: attendanceType.value, time: new Date().toLocaleTimeString() });
+        records[today] = recordList;
+        localStorage.setItem("attendanceRecords", JSON.stringify(records));
+        
         recordList.push({ type: attendanceType.value, time: new Date().toLocaleTimeString() });
         records[today] = recordList;
         localStorage.setItem("attendanceRecords", JSON.stringify(records));
@@ -74,7 +79,8 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function showMessage(text, type) {
+    message.className = "";
     message.textContent = text;
-    message.className = type === "success" ? "message-success" : "message-error";
+    message.classList.add(type === "success" ? "message-success" : "message-error");
   }
 });
