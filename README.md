@@ -14,3 +14,6 @@
 7、確認ボタンを押す
 8、位置情報の精査
 9、顔認証
+
+This application uses face-api.js (MIT License).
+Model files © justadudewhohacks. https://github.com/justadudewhohacks/face-api.js
