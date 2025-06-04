@@ -1,33 +1,15 @@
+async function performFaceAuth(name, isRegister = false) {
+  // 顔検出 → 特徴抽出
+  // 登録なら localStorageなどに保存
+  if (isRegister) {
+    localStorage.setItem(`face_${name}`, JSON.stringify(faceDescriptor));
+    return true;
+  } else {
+    const stored = localStorage.getItem(`face_${name}`);
+    if (!stored) return false;
 
-Promise.all([
-  faceapi.nets.tinyFaceDetector.loadFromUri("/models"),
-  faceapi.nets.faceLandmark68Net.loadFromUri("/models"),
-  faceapi.nets.faceRecognitionNet.loadFromUri("/models")
-]).then(startVideo);
-
-function startVideo() {
-  const video = document.getElementById("videoInput");
-  if (!video) {
-    console.error("videoInputが見つかりません");
-    return;
+    const storedDescriptor = JSON.parse(stored);
+    const distance = faceapi.euclideanDistance(faceDescriptor, storedDescriptor);
+    return distance < 0.5;
   }
-
-  navigator.mediaDevices
-    .getUserMedia({ video: {} })
-    .then((stream) => {
-      video.srcObject = stream;
-    })
-    .catch((err) => {
-      console.error("カメラの起動に失敗しました:", err);
-      alert("カメラへのアクセスが拒否されました。ブラウザ設定をご確認ください。");
-    });
-}
-
-async function performFaceAuth(username) {
-  // 仮の簡易顔認証処理（本番では faceMatcher と descriptor 比較）
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(true); // 常に成功とするデモ
-    }, 500);
-  });
 }
