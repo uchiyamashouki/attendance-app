@@ -1,61 +1,44 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>出欠記録フォーム（顔認証付き）</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>顔認証付き出欠記録フォーム</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="css/style.css">
+  <script defer src="https://unpkg.com/face-api.js"></script>
+  <script defer src="js/face.js"></script>
+  <script defer src="js/main.js"></script>
 </head>
 <body>
   <h2>出欠記録フォーム</h2>
-
   <div id="registrationForm" class="form-group">
-    <label for="registerName">氏名を登録してください（初回のみ）:</label>
+    <label for="registerName">氏名を登録してください:</label>
     <input type="text" id="registerName" placeholder="例：工大太郎">
     <button id="registerBtn">登録</button>
+    <div id="registerCameraArea">
+      <video id="registerVideo" autoplay muted></video>
+      <canvas id="registerCanvas" style="display:none;"></canvas>
+    </div>
   </div>
-
   <div id="userArea" style="display:none;">
     <p id="welcomeMsg"></p>
-    <div class="form-group" id="resetContainer" style="display:none;">
-      <button id="resetBtn" style="background-color:#d9534f;color:white;">氏名をリセットする</button>
-    </div>
-
     <form id="attendanceForm">
       <div class="form-group">
         <label>出欠記録:</label>
-        <div class="radio-group">
-          <label><input type="radio" name="attendanceType" value="開始"> 開始</label>
-          <label><input type="radio" name="attendanceType" value="終了"> 終了</label>
-        </div>
+        <label><input type="radio" name="attendanceType" value="開始"> 開始</label>
+        <label><input type="radio" name="attendanceType" value="終了"> 終了</label>
       </div>
       <div class="form-group">
         <label for="pitches">投球数 (任意):</label>
         <input type="number" id="pitches" placeholder="投球数" min="0">
       </div>
-      <button type="button" id="submitBtn">送信（顔認証あり）</button>
+      <button type="button" id="submitBtn">送信</button>
     </form>
-    <div id="message"></div>
-  </div>
-
-  <div id="passwordModal" style="display:none;">
-    <div class="form-group">
-      <label for="adminPassword">パスワードを入力してください:</label>
-      <input type="password" id="adminPassword">
-      <button id="confirmReset">確認</button>
+    <div id="authCameraArea" style="margin-top:15px;">
+      <video id="authVideo" autoplay muted></video>
+      <canvas id="authCanvas" style="display:none;"></canvas>
     </div>
   </div>
-
-  <div id="faceModal" class="modal">
-    <video id="video" autoplay muted playsinline></video>
-    <p>顔認証中...</p>
-  </div>
-
-  <script defer src="https://cdn.jsdelivr.net/npm/face-api.js"></script>
-  <script src="js/main.js"></script>
-
-  <script src="js/geolocation.js"></script>
-  <script src="js/faceauth.js"></script>
-
+  <div id="message" class="form-group"></div>
 </body>
 </html>
