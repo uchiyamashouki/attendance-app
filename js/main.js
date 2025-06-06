@@ -32,13 +32,6 @@ document.addEventListener("DOMContentLoaded", function () {
   let userData = getUserData();
 
   const userName = getUserName();
-  if (userName && registrationForm && userArea && welcomeMsg) {
-    registrationForm.style.display = "none";
-    userArea.style.display = "block";
-    welcomeMsg.textContent = `${userName} さんで記録します！`;
-    updateLastAttendanceInfo();
-    updateAttendanceButtonState();
-  }
 
   if (registerBtn) {
     registerBtn.addEventListener("click", function () {
@@ -49,7 +42,12 @@ document.addEventListener("DOMContentLoaded", function () {
       }
       saveUserName(nameInput);
       saveUserData({ name: nameInput });
-      location.reload();
+
+       registrationForm.style.display = "none";
+    userArea.style.display = "block";
+    welcomeMsg.textContent = `${nameInput} さんで記録します！`; 
+    updateLastAttendanceInfo();
+    updateAttendanceButtonState();
     });
   }
 
