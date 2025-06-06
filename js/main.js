@@ -1,102 +1,125 @@
 
-document.addEventListener("DOMContentLoaded", function () {
-  const resetBtn = document.getElementById("resetBtn");
-  const passwordModal = document.getElementById("passwordModal");
-  const confirmReset = document.getElementById("confirmReset");
-  const submitBtn = document.getElementById("submitBtn");
+document.addEventListener("DOMContentLoaded", () => {
   const registerBtn = document.getElementById("registerBtn");
-
+  const registerNameInput = document.getElementById("registerName");
   const registrationForm = document.getElementById("registrationForm");
   const userArea = document.getElementById("userArea");
   const welcomeMsg = document.getElementById("welcomeMsg");
+  const submitBtn = document.getElementById("submitBtn");
+  const message = document.getElementById("message");
 
-  const storedName = localStorage.getItem("userName");
-  if (storedName && registrationForm && userArea && welcomeMsg) {
+  const resetBtn = document.getElementById("resetBtn");
+  const passwordModal = document.getElementById("passwordModal");
+  const confirmReset = document.getElementById("confirmReset");
+
+  const userName = localStorage.getItem("userName");
+  if (userName && registrationForm && userArea && welcomeMsg) {
     registrationForm.style.display = "none";
     userArea.style.display = "block";
-    welcomeMsg.textContent = `${storedName} さん、こんにちは！`;
+    welcomeMsg.textContent = userName + " さんで記録します";
+    startCamera("authVideo");
+  } else {
+    startCamera("registerVideo");
   }
 
   if (registerBtn) {
-    registerBtn.addEventListener("click", function () {
-      registerBtn.classList.add("clicked");
-      const name = document.getElementById("registerName").value.trim();
-      if (name === "") {
-        alert("氏名を入力してください");
-        registerBtn.classList.remove("clicked");
+    registerBtn.addEventListener("click", async () => {
+      const name = registerNameInput.value.trim();
+      if (!name) {
+        showMessage("氏名を入力してください", "error");
+        return;
+      }
+      const descriptor = await captureFace("registerVideo");
+      if (!descriptor) {
+        showMessage("顔を検出できませんでした", "error");
         return;
       }
       localStorage.setItem("userName", name);
-      registrationForm.style.display = "none";
-      userArea.style.display = "block";
-      welcomeMsg.textContent = `${name} さん、こんにちは！`;
-    });
-  }
-
-  if (resetBtn && passwordModal && confirmReset) {
-    resetBtn.addEventListener("click", function () {
-      resetBtn.classList.add("clicked");
-      passwordModal.style.display = "block";
-    });
-
-    confirmReset.addEventListener("click", function () {
-      confirmReset.classList.add("clicked");
-      const password = document.getElementById("adminPassword").value;
-      if (password === "Kodai1942") {
-        localStorage.removeItem("userName");
-        localStorage.removeItem("authenticated");
-        document.getElementById("registerName").value = "";
-        registrationForm.style.display = "block";
-        userArea.style.display = "none";
-        document.getElementById("adminPassword").value = "";
-        passwordModal.style.display = "none";
-      } else {
-        alert("パスワードが正しくありません");
-      }
+      localStorage.setItem("userDescriptor", JSON.stringify(Array.from(descriptor)));
+      location.reload();
     });
   }
 
   if (submitBtn) {
-    submitBtn.addEventListener("click", async function () {
-      submitBtn.classList.add("clicked");
-
-      if (!isUserAuthenticated()) {
-        alert("本人認証を実行してください。");
-        submitBtn.classList.remove("clicked");
+    submitBtn.addEventListener("click", async () => {
+      const type = document.querySelector("input[name='attendanceType']:checked");
+      if (!type) {
+        showMessage("出欠記録を選択してください", "error");
         return;
       }
 
-      const posOk = await verifyLocation();
-      if (!posOk) {
-        alert("正しい場所（茜浜球場）からのみ記録可能です。");
-        submitBtn.classList.remove("clicked");
+      try {
+        const position = await getCurrentPosition();
+        const distance = calculateDistance(position.coords.latitude, position.coords.longitude, 35.662683, 140.008933);
+        if (distance > 0.1) {
+          showMessage("指定位置外からのアクセスです", "error");
+          return;
+        }
+      } catch (e) {
+        showMessage("位置情報の取得に失敗しました", "error");
         return;
       }
 
-      sendAttendanceData();
+      const result = await matchFace("authVideo");
+      if (!result) {
+        showMessage("顔認証に失敗しました", "error");
+        return;
+      }
+
+      showMessage("記録完了しました！", "success");
     });
   }
-});
 
-async function verifyLocation() {
-  return new Promise((resolve) => {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const lat = position.coords.latitude;
-        const lng = position.coords.longitude;
+  if (resetBtn && passwordModal && confirmReset) {
+    resetBtn.addEventListener("click", () => {
+      resetBtn.classList.add("clicked");
+      passwordModal.style.display = "block";
+    });
 
-        const targetLat = 35.66268324417568;
-        const targetLng = 140.00893276836095;
-        const distance = Math.sqrt(
-          Math.pow(lat - targetLat, 2) + Math.pow(lng - targetLng, 2)
-        );
-
-        resolve(distance < 0.001);
-      },
-      (err) => {
-        console.error("位置情報取得に失敗", err);
-        resolve(false);
+    confirmReset.addEventListener("click", () => {
+      confirmReset.classList.add("clicked");
+      const password = document.getElementById("adminPassword").value;
+      if (password === "Kodai1942") {
+        localStorage.removeItem("userName");
+        localStorage.removeItem("userDescriptor");
+        localStorage.removeItem("authenticated");
+        if (registerNameInput) registerNameInput.value = "";
+        if (registrationForm && userArea) {
+          registrationForm.style.display = "block";
+          userArea.style.display = "none";
+        }
+        document.getElementById("adminPassword").value = "";
+        passwordModal.style.display = "none";
+        showMessage("リセットが完了しました", "success");
+      } else {
+        showMessage("パスワードが正しくありません", "error");
       }
-    );
-  });
-}
+    });
+  }
+
+  function showMessage(text, type) {
+    if (message) {
+      message.textContent = text;
+      message.style.color = type === "error" ? "red" : "green";
+    } else {
+      alert(text);
+    }
+  }
+
+  function getCurrentPosition() {
+    return new Promise((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(resolve, reject);
+    });
+  }
+
+  function calculateDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) ** 2 +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLon/2) ** 2;
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  }
+});
