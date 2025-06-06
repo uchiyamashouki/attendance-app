@@ -4,7 +4,7 @@ export function sendToGoogleForm(data) {
   formData.append("entry.2025397394", data.pitches);
   formData.append("entry.360519448", data.latitude);
   formData.append("entry.792823488", data.longitude);
-  formData.append("entry.658296585", data.attendance);
+  formData.append("entry.658296585", data.attendanceType);
 
   fetch("https://docs.google.com/forms/d/e/1FAIpQLSegSTTLeL75exvNWpF2iEQqdP8nUC4p55TBLpjvPR1WGefBCA/formResponse", {
     method: "POST",
