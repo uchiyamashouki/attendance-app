@@ -1,3 +1,19 @@
+import {
+  showMessage,
+  showLoading,
+  calculateDistance
+} from "./utils.js";
+import {
+  getRecords,
+  saveRecords,
+  getUserData,
+  saveUserData,
+  getUserName,
+  saveUserName
+} from "./storage.js";
+import { getCurrentPosition } from "./location.js";
+import { sendToGoogleForm } from "./form.js";
+import { isUserAuthenticated } from "./auth.js";
 
 document.addEventListener("DOMContentLoaded", function () {
   const resetBtn = document.getElementById("resetBtn");
@@ -8,21 +24,18 @@ document.addEventListener("DOMContentLoaded", function () {
   const registrationForm = document.getElementById("registrationForm");
   const userArea = document.getElementById("userArea");
   const welcomeMsg = document.getElementById("welcomeMsg");
-  const message = document.getElementById("message");
   const closeInstruction = document.getElementById("closeInstruction");
-  const loading = document.getElementById("loading");
   const lastAttendanceInfo = document.getElementById("lastAttendanceInfo");
 
   const today = new Date().toLocaleDateString();
-  let records = JSON.parse(localStorage.getItem("attendanceRecords") || "{}");
-  let userData = JSON.parse(localStorage.getItem("attendanceUserData") || "{}");
+  let records = getRecords();
+  let userData = getUserData();
 
-  const userName = localStorage.getItem("userName");
+  const userName = getUserName();
   if (userName && registrationForm && userArea && welcomeMsg) {
     registrationForm.style.display = "none";
     userArea.style.display = "block";
-    welcomeMsg.textContent = userName + " さん、こんにちは！";
-
+    welcomeMsg.textContent = `${userName} さん、こんにちは！`;
     updateLastAttendanceInfo();
     updateAttendanceButtonState();
   }
@@ -34,8 +47,8 @@ document.addEventListener("DOMContentLoaded", function () {
         showMessage("氏名を入力してください", "error");
         return;
       }
-      localStorage.setItem("userName", nameInput);
-      localStorage.setItem("attendanceUserData", JSON.stringify({ name: nameInput }));
+      saveUserName(nameInput);
+      saveUserData({ name: nameInput });
       location.reload();
     });
   }
@@ -48,10 +61,7 @@ document.addEventListener("DOMContentLoaded", function () {
     confirmReset.addEventListener("click", function () {
       const password = document.getElementById("adminPassword").value;
       if (password === "Kodai1942") {
-        localStorage.removeItem("userName");
-        localStorage.removeItem("authenticated");
-        localStorage.removeItem("attendanceUserData");
-        localStorage.removeItem("attendanceRecords");
+        localStorage.clear();
         location.reload();
       } else {
         showMessage("パスワードが正しくありません", "error");
@@ -60,9 +70,9 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   if (submitBtn) {
-    submitBtn.addEventListener("click", async function () {
+    submitBtn.addEventListener("click", function () {
       const attendanceType = document.querySelector("input[name='attendanceType']:checked");
-      const currentName = localStorage.getItem("userName");
+      const currentName = getUserName();
       if (!currentName || !attendanceType) {
         showMessage("氏名と練習区分は必須です", "error");
         return;
@@ -79,63 +89,49 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
       }
 
-      if (!navigator.geolocation) {
-        showMessage("位置情報が取得できません", "error");
-        return;
-      }
-
       showLoading(true);
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          showLoading(false);
-          const lat = position.coords.latitude;
-          const lon = position.coords.longitude;
-          const distance = calculateDistance(lat, lon, 35.662683, 140.008933);
+      getCurrentPosition((lat, lon) => {
+        showLoading(false);
+        const distance = calculateDistance(lat, lon, 35.662683, 140.008933);
 
-          if (distance > 10) {
-            showMessage("球場から離れすぎています（" + Math.round(distance * 1000) + "m）", "error");
-            return;
-          }
+        if (distance > 0.01) {
+          showMessage(`球場から離れすぎています（${Math.round(distance * 1000)}m）`, "error");
+          return;
+        }
 
-          const recordList = records[today] || [];
-          if (recordList.length >= 10) {
-            showMessage("本日は既に10回記録済みです", "error");
-            return;
-          }
+        const recordList = records[today] || [];
+        if (recordList.length >= 10) {
+          showMessage("本日は既に10回記録済みです", "error");
+          return;
+        }
 
-          const now = new Date();
-          const record = { type: attendanceType.value, time: now.toLocaleTimeString() };
-          recordList.push(record);
-          records[today] = recordList;
-          localStorage.setItem("attendanceRecords", JSON.stringify(records));
+        const now = new Date();
+        const record = { type: attendanceType.value, time: now.toLocaleTimeString() };
+        recordList.push(record);
+        records[today] = recordList;
+        saveRecords(records);
 
-          userData = userData || {};
-          if (attendanceType.value === "開始") {
-            userData.lastStart = { date: today, time: record.time };
-          } else {
-            userData.lastEnd = { date: today, time: record.time };
-          }
-          localStorage.setItem("attendanceUserData", JSON.stringify(userData));
+        if (attendanceType.value === "開始") {
+          userData.lastStart = { date: today, time: record.time };
+        } else {
+          userData.lastEnd = { date: today, time: record.time };
+        }
+        saveUserData(userData);
 
-          updateLastAttendanceInfo();
-          updateAttendanceButtonState();
-          sendToGoogleForm({
-            name: currentName,
-            attendance: attendanceType.value,
-            pitches: pitches,
-            latitude: lat,
-            longitude: lon
-          });
+        updateLastAttendanceInfo();
+        updateAttendanceButtonState();
 
-          showMessage("記録完了しました！", "success");
-          if (closeInstruction) closeInstruction.style.display = "block";
-        },
-        () => {
-          showLoading(false);
-          showMessage("位置情報の取得に失敗しました", "error");
-        },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-      );
+        sendToGoogleForm({
+          name: currentName,
+          attendance: attendanceType.value,
+          pitches: pitches,
+          latitude: lat,
+          longitude: lon
+        });
+
+        showMessage("記録完了しました！", "success");
+        if (closeInstruction) closeInstruction.style.display = "block";
+      });
     });
   }
 
@@ -174,43 +170,5 @@ document.addEventListener("DOMContentLoaded", function () {
     if (userData.lastStart?.date === today && userData.lastEnd?.date === today) {
       submitBtn.disabled = true;
     }
-  }
-
-  function sendToGoogleForm(data) {
-    const formData = new FormData();
-    formData.append("entry.1235081500", data.name);
-    formData.append("entry.2025397394", data.pitches);
-    formData.append("entry.360519448", data.latitude);
-    formData.append("entry.792823488", data.longitude);
-    formData.append("entry.2085125757", data.attendance);
-
-    fetch("https://docs.google.com/forms/d/e/1FAIpQLSegSTTLeL75exvNWpF2iEQqdP8nUC4p55TBLpjvPR1WGefBCA/formResponse", {
-      method: "POST",
-      mode: "no-cors",
-      body: formData
-    });
-  }
-
-  function calculateDistance(lat1, lon1, lat2, lon2) {
-    const R = 6371;
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a =
-      Math.sin(dLat / 2) ** 2 +
-      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-      Math.sin(dLon / 2) ** 2;
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  }
-
-  function showMessage(text, type) {
-    if (!message) return;
-    message.className = "";
-    message.textContent = text;
-    message.classList.add(type === "success" ? "message-success" : "message-error");
-  }
-
-  function showLoading(show) {
-    if (loading) loading.style.display = show ? "block" : "none";
-    if (submitBtn) submitBtn.disabled = show;
   }
 });
