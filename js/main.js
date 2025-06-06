@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", function () {
   if (userName && registrationForm && userArea && welcomeMsg) {
     registrationForm.style.display = "none";
     userArea.style.display = "block";
-    welcomeMsg.textContent = userName + " さん、こんにちは！";
+    welcomeMsg.textContent = userName + " さんで記録しています";
   }
 
   if (registerBtn) {
@@ -85,8 +85,8 @@ document.addEventListener("DOMContentLoaded", function () {
           }
 
           const recordList = records[today] || [];
-          if (recordList.length >= 2) {
-            showMessage("本日は既に2回記録済みです", "error");
+          if (recordList.length >= 100) {//デバックとして100回
+            showMessage("本日は既に100回記録済みです", "error");
             return;
           }
 
