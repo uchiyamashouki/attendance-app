@@ -10,70 +10,74 @@ document.addEventListener("DOMContentLoaded", function () {
   const userArea = document.getElementById("userArea");
   const welcomeMsg = document.getElementById("welcomeMsg");
 
-  // 既に氏名が保存されている場合、出欠フォームを表示
   const storedName = localStorage.getItem("userName");
-  if (storedName) {
+  if (storedName && registrationForm && userArea && welcomeMsg) {
     registrationForm.style.display = "none";
     userArea.style.display = "block";
     welcomeMsg.textContent = `${storedName} さん、こんにちは！`;
   }
 
-  // 初期登録ボタンの処理
-  registerBtn.addEventListener("click", function () {
-    registerBtn.classList.add("clicked");
-    const name = document.getElementById("registerName").value.trim();
-    if (name === "") {
-      alert("氏名を入力してください");
-      registerBtn.classList.remove("clicked");
-      return;
-    }
-    localStorage.setItem("userName", name);
-    registrationForm.style.display = "none";
-    userArea.style.display = "block";
-    welcomeMsg.textContent = `${name} さん、こんにちは！`;
-  });
+  if (registerBtn) {
+    registerBtn.addEventListener("click", function () {
+      registerBtn.classList.add("clicked");
+      const name = document.getElementById("registerName").value.trim();
+      if (name === "") {
+        alert("氏名を入力してください");
+        registerBtn.classList.remove("clicked");
+        return;
+      }
+      localStorage.setItem("userName", name);
+      registrationForm.style.display = "none";
+      userArea.style.display = "block";
+      welcomeMsg.textContent = `${name} さん、こんにちは！`;
+    });
+  }
 
-  // リセットボタン処理
-  resetBtn.addEventListener("click", function () {
-    resetBtn.classList.add("clicked");
-    passwordModal.style.display = "block";
-  });
+  if (resetBtn && passwordModal && confirmReset) {
+    resetBtn.addEventListener("click", function () {
+      resetBtn.classList.add("clicked");
+      passwordModal.style.display = "block";
+    });
 
-  // リセット確認ボタン
-  confirmReset.addEventListener("click", function () {
-    confirmReset.classList.add("clicked");
-    const password = document.getElementById("adminPassword").value;
-    if (password === "Kodai1942") {
-      localStorage.removeItem("userName");
-      localStorage.removeItem("authenticated");
-      location.reload();
-    } else {
-      alert("パスワードが正しくありません");
-    }
-  });
+    confirmReset.addEventListener("click", function () {
+      confirmReset.classList.add("clicked");
+      const password = document.getElementById("adminPassword").value;
+      if (password === "Kodai1942") {
+        localStorage.removeItem("userName");
+        localStorage.removeItem("authenticated");
+        document.getElementById("registerName").value = "";
+        registrationForm.style.display = "block";
+        userArea.style.display = "none";
+        document.getElementById("adminPassword").value = "";
+        passwordModal.style.display = "none";
+      } else {
+        alert("パスワードが正しくありません");
+      }
+    });
+  }
 
-  // 送信ボタン処理
-  submitBtn.addEventListener("click", async function () {
-    submitBtn.classList.add("clicked");
+  if (submitBtn) {
+    submitBtn.addEventListener("click", async function () {
+      submitBtn.classList.add("clicked");
 
-    if (!isUserAuthenticated()) {
-      alert("本人認証を実行してください。");
-      submitBtn.classList.remove("clicked");
-      return;
-    }
+      if (!isUserAuthenticated()) {
+        alert("本人認証を実行してください。");
+        submitBtn.classList.remove("clicked");
+        return;
+      }
 
-    const posOk = await verifyLocation();
-    if (!posOk) {
-      alert("正しい場所（茜浜球場）からのみ記録可能です。");
-      submitBtn.classList.remove("clicked");
-      return;
-    }
+      const posOk = await verifyLocation();
+      if (!posOk) {
+        alert("正しい場所（茜浜球場）からのみ記録可能です。");
+        submitBtn.classList.remove("clicked");
+        return;
+      }
 
-    sendAttendanceData(); // 既存の送信処理
-  });
+      sendAttendanceData();
+    });
+  }
 });
 
-// 位置情報確認
 async function verifyLocation() {
   return new Promise((resolve) => {
     navigator.geolocation.getCurrentPosition(
