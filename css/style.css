@@ -1,31 +1,79 @@
 
+/* ベーススタイル */
 body {
   font-family: Arial, sans-serif;
-  padding: 20px;
-  background: #f8f9fa;
+  background-color: #f8f9fa;
+  margin: 20px;
+  padding: 0;
 }
+
+/* セクションヘッダー */
 h2 {
-  text-align: center;
+  color: #333;
+  margin-bottom: 20px;
 }
+
+/* 入力フォームの共通デザイン */
 .form-group {
-  margin: 20px 0;
+  margin-bottom: 15px;
 }
-input[type="text"], input[type="number"] {
-  width: 100%;
-  padding: 10px;
-  margin-top: 5px;
+
+/* ラジオボタンラベル */
+.radio-group label {
+  margin-right: 15px;
+  font-weight: normal;
 }
-button {
-  width: 100%;
-  padding: 12px;
-  background-color: #4CAF50;
-  border: none;
-  color: white;
+
+/* テキスト・数値入力 */
+input[type="text"],
+input[type="password"],
+input[type="number"] {
+  width: 90%;
+  padding: 8px;
   font-size: 16px;
+  margin-top: 5px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }
-video {
-  width: 100%;
-  max-width: 320px;
-  margin: 10px auto;
-  display: block;
+
+/* ボタン共通 */
+button {
+  font-size: 16px;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+/* ボタン間隔 */
+.spaced-button {
+  margin: 10px 0;
+}
+
+/* ボタン押下後の色変化 */
+.clicked {
+  background-color: #5cb85c !important;
+  color: white !important;
+}
+
+/* エラーメッセージ */
+#errorMessage {
+  color: red;
+  margin-top: 10px;
+}
+
+/* 成功メッセージ */
+#successMessage {
+  color: green;
+  margin-top: 10px;
+}
+
+/* モバイル対応 */
+@media (max-width: 600px) {
+  input[type="text"],
+  input[type="password"],
+  input[type="number"] {
+    width: 100%;
+  }
 }
