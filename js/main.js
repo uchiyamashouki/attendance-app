@@ -5,6 +5,32 @@ document.addEventListener("DOMContentLoaded", function () {
   const confirmReset = document.getElementById("confirmReset");
   const submitBtn = document.getElementById("submitBtn");
 
+  const registerBtn = document.getElementById("registerBtn");
+  const registrationForm = document.getElementById("registrationForm");
+  const userArea = document.getElementById("userArea");
+  const welcomeMsg = document.getElementById("welcomeMsg");
+
+  // 氏名が既に登録されていれば出欠フォームを表示
+  const storedName = localStorage.getItem("userName");
+  if (storedName) {
+    registrationForm.style.display = "none";
+    userArea.style.display = "block";
+    welcomeMsg.textContent = `${storedName} さん、こんにちは！`;
+  }
+
+  registerBtn.addEventListener("click", function () {
+    const name = document.getElementById("registerName").value.trim();
+    if (name === "") {
+      alert("氏名を入力してください");
+      return;
+    }
+    localStorage.setItem("userName", name);
+
+    registrationForm.style.display = "none";
+    userArea.style.display = "block";
+    welcomeMsg.textContent = `${name} さん、こんにちは！`;
+  });
+
   resetBtn.addEventListener("click", function () {
     passwordModal.style.display = "block";
   });
