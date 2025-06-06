@@ -5,17 +5,15 @@
   <title>出欠記録フォーム</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <link rel="stylesheet" href="css/style.css">
-  <script src="js/auth.js" defer></script>
 </head>
-  
-  <button onclick="registerWithFaceID()">🔐 顔認証を登録（初回のみ）</button>
-<br />
-<button onclick="runWebAuthnAuthentication()">✅ 本人認証</button>
-<p id="auth-status">❌ 本人認証 未実施</p>
-  
 <body>
-  <button onclick="runWebAuthnAuthentication()">本人認証する</button>
-  <p id="auth-status">❌ 本人認証 未実施</p>
+
+    <div>
+      <button onclick="registerWithFaceID()">🔐 顔認証を登録（初回のみ）</button><br />
+      <button onclick="runWebAuthnAuthentication()">✅ 本人認証</button>
+      <p id="auth-status">❌ 本人認証 未実施</p>
+    </div>
+    
 
   <h2>出欠記録フォーム</h2>
 
