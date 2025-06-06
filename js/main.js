@@ -98,8 +98,8 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         const recordList = records[today] || [];
-        if (recordList.length >= 10) {
-          showMessage("本日は既に10回記録済みです", "error");
+        if (recordList.length >= 100) {
+          showMessage("本日は既に100回記録済みです", "error");
           return;
         }
 
