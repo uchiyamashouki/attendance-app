@@ -1,4 +1,3 @@
-// auth.js（修正版）
 let isAuthenticated = false;
 
 // 初回登録（パスキー）
@@ -62,9 +61,5 @@ function isUserAuthenticated() {
   return isAuthenticated;
 }
 
-// 認証済みの永続化は行わない（毎回実行必須）
-// ページ読み込み時に復元もしない
-
-window.registerWithFaceID = registerWithFaceID;
-window.runWebAuthnAuthentication = runWebAuthnAuthentication;
-window.isUserAuthenticated = isUserAuthenticated;
+// ✅ モジュールとして export（window.○○は不要）
+export { registerWithFaceID, runWebAuthnAuthentication, isUserAuthenticated };
