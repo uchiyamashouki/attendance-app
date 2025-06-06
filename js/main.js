@@ -1,3 +1,4 @@
+// ✅ 修正後の main.js
 import {
   showMessage,
   showLoading,
@@ -13,9 +14,11 @@ import {
 } from "./storage.js";
 import { getCurrentPosition } from "./location.js";
 import { sendToGoogleForm } from "./form.js";
-import { isUserAuthenticated } from "./auth.js";
+import { registerWithFaceID, runWebAuthnAuthentication, isUserAuthenticated } from "./auth.js";
 
 document.addEventListener("DOMContentLoaded", function () {
+  const registerFaceBtn = document.getElementById("registerFaceBtn");
+  const authBtn = document.getElementById("authBtn");
   const resetBtn = document.getElementById("resetBtn");
   const passwordModal = document.getElementById("passwordModal");
   const confirmReset = document.getElementById("confirmReset");
@@ -33,6 +36,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const userName = getUserName();
 
+  if (registerFaceBtn) {
+    registerFaceBtn.addEventListener("click", registerWithFaceID);
+  }
+
+  if (authBtn) {
+    authBtn.addEventListener("click", runWebAuthnAuthentication);
+  }
+
+  if (userName && registrationForm && userArea && welcomeMsg) {
+    registrationForm.style.display = "none";
+    userArea.style.display = "block";
+    welcomeMsg.textContent = `${userName} さんで記録します！`;
+    updateLastAttendanceInfo();
+    updateAttendanceButtonState();
+  }
+
   if (registerBtn) {
     registerBtn.addEventListener("click", function () {
       const nameInput = document.getElementById("registerName").value.trim();
@@ -43,11 +62,11 @@ document.addEventListener("DOMContentLoaded", function () {
       saveUserName(nameInput);
       saveUserData({ name: nameInput });
 
-       registrationForm.style.display = "none";
-    userArea.style.display = "block";
-    welcomeMsg.textContent = `${nameInput} さんで記録します！`; 
-    updateLastAttendanceInfo();
-    updateAttendanceButtonState();
+      registrationForm.style.display = "none";
+      userArea.style.display = "block";
+      welcomeMsg.textContent = `${nameInput} さんで記録します！`;
+      updateLastAttendanceInfo();
+      updateAttendanceButtonState();
     });
   }
 
