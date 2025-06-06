@@ -85,14 +85,24 @@ document.addEventListener("DOMContentLoaded", function () {
           }
 
           const recordList = records[today] || [];
-          if (recordList.length >= 10) {//デバックとして10回
-            showMessage("本日は既に10回記録済みです", "error");
+          if (recordList.length >= 2) {
+            showMessage("本日は既に2回記録済みです", "error");
             return;
           }
+
+          const pitches = document.getElementById("pitches").value || "";
 
           recordList.push({ type: attendanceType.value, time: new Date().toLocaleTimeString() });
           records[today] = recordList;
           localStorage.setItem("attendanceRecords", JSON.stringify(records));
+
+          sendToGoogleForm({
+            name: currentName,
+            attendance: attendanceType.value,
+            pitches: pitches,
+            latitude: lat,
+            longitude: lon
+          });
 
           showMessage("記録完了しました！", "success");
         },
@@ -120,5 +130,20 @@ document.addEventListener("DOMContentLoaded", function () {
     message.className = "";
     message.textContent = text;
     message.classList.add(type === "success" ? "message-success" : "message-error");
+  }
+
+  function sendToGoogleForm(data) {
+    const formData = new FormData();
+    formData.append("entry.411119479", data.name);
+    formData.append("entry.114182324", data.pitches);
+    formData.append("entry.1124427894", data.latitude);
+    formData.append("entry.792823488", data.longitude);
+    formData.append("entry.1139332873", data.attendance);
+
+    fetch("https://docs.google.com/forms/d/e/1FAIpQLSegSTTLeL75exvNWpF2iEQqdP8nUC4p55TBLpjvPR1WGefBCA/formResponse", {
+      method: "POST",
+      mode: "no-cors",
+      body: formData
+    });
   }
 });
