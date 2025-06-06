@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const resetBtn = document.getElementById("resetBtn");
   const passwordModal = document.getElementById("passwordModal");
   const confirmReset = document.getElementById("confirmReset");
+  const submitBtn = document.getElementById("submitBtn");
 
   resetBtn.addEventListener("click", function () {
     passwordModal.style.display = "block";
@@ -12,109 +13,49 @@ document.addEventListener("DOMContentLoaded", function () {
     const password = document.getElementById("adminPassword").value;
     if (password === "Kodai1942") {
       localStorage.removeItem("userName");
+      localStorage.removeItem("authenticated");
       location.reload();
     } else {
-      showMessage("パスワードが正しくありません", "error");
+      alert("パスワードが正しくありません");
     }
   });
 
-  const registrationForm = document.getElementById("registrationForm");
-  const userArea = document.getElementById("userArea");
-  const registerBtn = document.getElementById("registerBtn");
-  const submitBtn = document.getElementById("submitBtn");
-  const message = document.getElementById("message");
-
-  const userName = localStorage.getItem("userName");
-  const today = new Date().toLocaleDateString();
-  let records = JSON.parse(localStorage.getItem("attendanceRecords") || "{}");
-
-if (userName) {
-  registrationForm.style.display = "none";
-  userArea.style.display = "block";
-  document.getElementById("welcomeMsg").textContent = userName + " さんで記録します";
-
-  // ⬇ 安全に表示
-  const resetContainer = document.getElementById("resetContainer");
-  if (resetContainer) resetContainer.style.display = "block";
-}
-
-
-  registerBtn.addEventListener("click", function () {
-    const nameInput = document.getElementById("registerName").value.trim();
-    if (!nameInput) {
-      showMessage("氏名を入力してください", "error");
+  submitBtn.addEventListener("click", async function () {
+    if (!isUserAuthenticated()) {
+      alert("本人認証を実行してください。");
       return;
     }
-    localStorage.setItem("userName", nameInput);
-    location.reload();
+
+    const posOk = await verifyLocation();
+    if (!posOk) {
+      alert("正しい場所（茜浜球場）からのみ記録可能です。");
+      return;
+    }
+
+    sendAttendanceData(); // 既存の送信処理
   });
+});
 
-  submitBtn.addEventListener("click", function () {
-    const attendanceType = document.querySelector("input[name='attendanceType']:checked");
-    if (!attendanceType) {
-      showMessage("出欠を選択してください", "error");
-      return;
-    }
-
-    if (!navigator.geolocation) {
-      showMessage("位置情報が取得できません", "error");
-      return;
-    }
-
+// 位置情報確認
+async function verifyLocation() {
+  return new Promise((resolve) => {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const lat = position.coords.latitude;
-        const lon = position.coords.longitude;
-        const distance = calculateDistance(lat, lon, 35.662683, 140.008933);
+        const lng = position.coords.longitude;
 
-        if (distance > 10) {//デバックとして10㎞
-          showMessage("球場から離れすぎています（" + Math.round(distance * 1000) + "m）", "error");
-          return;
-        }
+        const targetLat = 35.66268324417568;
+        const targetLng = 140.00893276836095;
+        const distance = Math.sqrt(
+          Math.pow(lat - targetLat, 2) + Math.pow(lng - targetLng, 2)
+        );
 
-        const recordList = records[today] || [];
-        if (recordList.length >= 20) {//デバックとして20回
-          showMessage("本日は既に20回記録済みです", "error");
-          return;
-        }
-
-        recordList.push({ type: attendanceType.value, time: new Date().toLocaleTimeString() });
-        records[today] = recordList;
-        localStorage.setItem("attendanceRecords", JSON.stringify(records));
-
-        showMessage("記録完了しました！", "success");
+        resolve(distance < 0.001);
       },
-      () => {
-        showMessage("位置情報の取得に失敗しました", "error");
+      (err) => {
+        console.error("位置情報取得に失敗", err);
+        resolve(false);
       }
     );
   });
-
-  function calculateDistance(lat1, lon1, lat2, lon2) {
-    const R = 6371;
-    const dLat = (lat2 - lat1) * (Math.PI / 180);
-    const dLon = (lon2 - lon1) * (Math.PI / 180);
-    const a =
-      Math.sin(dLat / 2) ** 2 +
-      Math.cos(lat1 * (Math.PI / 180)) *
-      Math.cos(lat2 * (Math.PI / 180)) *
-      Math.sin(dLon / 2) ** 2;
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  }
-
-  function showMessage(text, type) {
-    message.className = "";
-    message.textContent = text;
-    message.classList.add(type === "success" ? "message-success" : "message-error");
-  }
-});
-
-document.getElementById("submitBtn").addEventListener("click", function(e) {
-    if (!isUserAuthenticated()) {
-        alert("本人認証を先に実施してください。");
-        return;
-    }
-
-    // 認証済みなら送信処理を呼び出す
-    sendAttendanceData();
-});
+}
