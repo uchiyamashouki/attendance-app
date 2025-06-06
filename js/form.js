@@ -1,5 +1,3 @@
-console.log("送信内容:", data);
-
 export function sendToGoogleForm(data) {
   const formData = new FormData();
  formData.append("entry.1235081500", data.name);           // 氏名（正）
