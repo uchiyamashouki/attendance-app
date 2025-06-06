@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -8,35 +9,35 @@
 </head>
 <body>
 
-    <div>
-      <button onclick="registerWithFaceID()">🔐 顔認証を登録（初回のみ）</button><br />
-      <button onclick="runWebAuthnAuthentication()">✅ 本人認証</button>
-      <p id="auth-status">❌ 本人認証 未実施</p>
-    </div>
-    
+  <div>
+    <button onclick="registerWithFaceID()">🔐 顔認証を登録（初回のみ）</button><br />
+    <button onclick="runWebAuthnAuthentication()">✅ 本人認証</button>
+    <p id="auth-status">❌ 本人認証 未実施</p>
+  </div>
 
   <h2>出欠記録フォーム</h2>
 
   <div id="registrationForm" class="form-group">
     <label for="registerName">氏名を登録してください（初回のみ）:</label>
     <input type="text" id="registerName" placeholder="例：工大太郎">
-    <button id="registerBtn">登録</button>
+    <button id="registerBtn" type="button">登録</button>
   </div>
 
   <div id="userArea" style="display:none;">
     <p id="welcomeMsg"></p>
 
-      <div class="form-group" id="resetContainer" style="display:none;">
-    <button id="resetBtn" style="background-color:#d9534f;color:white;">氏名をリセットする</button>
-  </div>
-  <div id="passwordModal" style="display:none;">
-    <div class="form-group">
-      <label for="adminPassword">パスワードを入力してください:</label>
-      <input type="password" id="adminPassword">
-      <button id="confirmReset"style="background-color:#d9534f;color:white;">確認</button>
+    <div class="form-group" id="resetContainer" style="display:none;">
+      <button id="resetBtn" style="background-color:#d9534f;color:white;">氏名をリセットする</button>
     </div>
-  </div>
-    
+
+    <div id="passwordModal" style="display:none;">
+      <div class="form-group">
+        <label for="adminPassword">パスワードを入力してください:</label>
+        <input type="password" id="adminPassword">
+        <button id="confirmReset" style="background-color:#d9534f;color:white;">確認</button>
+      </div>
+    </div>
+
     <form id="attendanceForm">
       <div class="form-group">
         <label>出欠記録:</label>
@@ -54,8 +55,8 @@
     <div id="message"></div>
   </div>
 
-  <script src="js/main.js"></script>
-  
+  <!-- 修正: auth.js と main.js を読み込み -->
+  <script src="js/auth.js" defer></script>
+  <script src="js/main.js" defer></script>
 </body>
-
 </html>
