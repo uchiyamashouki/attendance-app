@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", function () {
   if (userName && registrationForm && userArea && welcomeMsg) {
     registrationForm.style.display = "none";
     userArea.style.display = "block";
-    welcomeMsg.textContent = `${userName} さん、こんにちは！`;
+    welcomeMsg.textContent = `${userName} さんで記録します！`;
     updateLastAttendanceInfo();
     updateAttendanceButtonState();
   }
