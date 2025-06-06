@@ -4,13 +4,13 @@ document.addEventListener("DOMContentLoaded", function () {
   const passwordModal = document.getElementById("passwordModal");
   const confirmReset = document.getElementById("confirmReset");
   const submitBtn = document.getElementById("submitBtn");
-
   const registerBtn = document.getElementById("registerBtn");
+
   const registrationForm = document.getElementById("registrationForm");
   const userArea = document.getElementById("userArea");
   const welcomeMsg = document.getElementById("welcomeMsg");
 
-  // 氏名が既に登録されていれば出欠フォームを表示
+  // 既に氏名が保存されている場合、出欠フォームを表示
   const storedName = localStorage.getItem("userName");
   if (storedName) {
     registrationForm.style.display = "none";
@@ -18,24 +18,30 @@ document.addEventListener("DOMContentLoaded", function () {
     welcomeMsg.textContent = `${storedName} さん、こんにちは！`;
   }
 
+  // 初期登録ボタンの処理
   registerBtn.addEventListener("click", function () {
+    registerBtn.classList.add("clicked");
     const name = document.getElementById("registerName").value.trim();
     if (name === "") {
       alert("氏名を入力してください");
+      registerBtn.classList.remove("clicked");
       return;
     }
     localStorage.setItem("userName", name);
-
     registrationForm.style.display = "none";
     userArea.style.display = "block";
     welcomeMsg.textContent = `${name} さん、こんにちは！`;
   });
 
+  // リセットボタン処理
   resetBtn.addEventListener("click", function () {
+    resetBtn.classList.add("clicked");
     passwordModal.style.display = "block";
   });
 
+  // リセット確認ボタン
   confirmReset.addEventListener("click", function () {
+    confirmReset.classList.add("clicked");
     const password = document.getElementById("adminPassword").value;
     if (password === "Kodai1942") {
       localStorage.removeItem("userName");
@@ -46,15 +52,20 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
+  // 送信ボタン処理
   submitBtn.addEventListener("click", async function () {
+    submitBtn.classList.add("clicked");
+
     if (!isUserAuthenticated()) {
       alert("本人認証を実行してください。");
+      submitBtn.classList.remove("clicked");
       return;
     }
 
     const posOk = await verifyLocation();
     if (!posOk) {
       alert("正しい場所（茜浜球場）からのみ記録可能です。");
+      submitBtn.classList.remove("clicked");
       return;
     }
 
