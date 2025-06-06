@@ -1,4 +1,4 @@
-
+// auth.js（修正版）
 let isAuthenticated = false;
 
 // 初回登録（パスキー）
@@ -47,7 +47,6 @@ async function runWebAuthnAuthentication() {
 
     if (assertion) {
       isAuthenticated = true;
-      localStorage.setItem("authenticated", "true");
       const status = document.getElementById("auth-status");
       if (status) status.textContent = "✅ 本人認証 済み";
       alert("本人認証に成功しました。");
@@ -63,14 +62,8 @@ function isUserAuthenticated() {
   return isAuthenticated;
 }
 
-// 認証済みをページ読み込み時に復元
-window.addEventListener("DOMContentLoaded", () => {
-  if (localStorage.getItem("authenticated") === "true") {
-    isAuthenticated = true;
-    const status = document.getElementById("auth-status");
-    if (status) status.textContent = "✅ 本人認証 済み";
-  }
-});
+// 認証済みの永続化は行わない（毎回実行必須）
+// ページ読み込み時に復元もしない
 
 window.registerWithFaceID = registerWithFaceID;
 window.runWebAuthnAuthentication = runWebAuthnAuthentication;
