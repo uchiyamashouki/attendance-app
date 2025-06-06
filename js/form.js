@@ -1,6 +1,6 @@
 export function sendToGoogleForm(data) {
   const formData = new FormData();
-  formData.append("entry.1235081500", data.name);
+  formData.append("entry.1235081500", data.userName);
   formData.append("entry.2025397394", data.pitches);
   formData.append("entry.360519448", data.latitude);
   formData.append("entry.792823488", data.longitude);
