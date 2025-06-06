@@ -1,3 +1,4 @@
+
 let isAuthenticated = false;
 
 // パスキー登録（初回のみ）
@@ -11,7 +12,7 @@ async function registerWithFaceID() {
         challenge: new Uint8Array(32),
         rp: { name: "DOUSE Attendance" },
         user: {
-            id: new Uint8Array(16), // 本来はユーザーごとにユニークにする
+            id: new Uint8Array(16),
             name: "shouki@example.com",
             displayName: "Shouki"
         },
@@ -33,7 +34,7 @@ async function registerWithFaceID() {
     }
 }
 
-// 認証（ログイン的な意味）
+// 認証（毎回）
 async function runWebAuthnAuthentication() {
     try {
         const assertion = await navigator.credentials.get({
