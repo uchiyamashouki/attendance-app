@@ -111,14 +111,14 @@ document.addEventListener("DOMContentLoaded", function () {
         showLoading(false);
         const distance = calculateDistance(lat, lon, 35.662683, 140.008933);
 
-        if (distance > 10.1) {//デバック
+        if (distance > 0.1) {
           showMessage(`球場から離れすぎています（${Math.round(distance * 1000)}m）`, "error");
           return;
         }
 
         const recordList = records[today] || [];
-        if (recordList.length >= 100) {//デバック
-          showMessage("本日は既に100回記録済みです", "error");
+        if (recordList.length >= 5) {
+          showMessage("本日は既に5回記録済みです", "error");
           return;
         }
 
