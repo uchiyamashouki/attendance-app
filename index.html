@@ -1,44 +1,64 @@
-<!DOCTYPE html>
-<html lang="ja">
+<html>
 <head>
   <meta charset="UTF-8">
-  <title>顔認証付き出欠記録フォーム</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>出欠記録フォーム</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <link rel="stylesheet" href="css/style.css">
-  <script defer src="https://unpkg.com/face-api.js"></script>
-  <script defer src="js/face.js"></script>
-  <script defer src="js/main.js"></script>
 </head>
 <body>
-  <h2>出欠記録フォーム</h2>
-  <div id="registrationForm" class="form-group">
-    <label for="registerName">氏名を登録してください:</label>
-    <input type="text" id="registerName" placeholder="例：工大太郎">
-    <button id="registerBtn">登録</button>
-    <div id="registerCameraArea">
-      <video id="registerVideo" autoplay muted></video>
-      <canvas id="registerCanvas" style="display:none;"></canvas>
-    </div>
+
+  <div>
+    <button id="registerFaceBtn" class="spaced-button">🔐 顔認証を登録（初回のみ）</button><br />
+    <button id="authBtn" class="spaced-button">👱 本人認証</button>
+    <p id="auth-status">❌ 本人認証 未実施</p>
   </div>
+
+  <h2>出欠記録フォーム</h2>
+
+  <div id="registrationForm" class="form-group">
+    <label for="registerName">氏名を登録してください（姓と名の間にスペース不要）:</label>
+    <input type="text" id="registerName" placeholder="例：工大太郎">
+    <button id="registerBtn" class="spaced-button" type="button">登録</button>
+  </div>
+
   <div id="userArea" style="display:none;">
     <p id="welcomeMsg"></p>
-    <form id="attendanceForm">
+    <p id="lastAttendanceInfo"></p>
+
+    <div class="form-group">
+      <button id="resetBtn" class="spaced-button danger">氏名をリセットする</button>
+    </div>
+
+    <div id="passwordModal" style="display:none;">
+      <div class="form-group">
+        <label for="adminPassword">パスワードを入力してください:</label>
+        <input type="password" id="adminPassword">
+        <button id="confirmReset" class="spaced-button danger">確認</button>
+      </div>
+    </div>
+
+    <form id="attendanceForm" onsubmit="return false;">
       <div class="form-group">
         <label>出欠記録:</label>
-        <label><input type="radio" name="attendanceType" value="開始"> 開始</label>
-        <label><input type="radio" name="attendanceType" value="終了"> 終了</label>
+        <div class="radio-group">
+          <label><input type="radio" name="attendanceType" id="start" value="開始"> 開始</label>
+          <label><input type="radio" name="attendanceType" id="end" value="終了"> 終了</label>
+        </div>
       </div>
+
       <div class="form-group">
         <label for="pitches">投球数 (任意):</label>
         <input type="number" id="pitches" placeholder="投球数" min="0">
       </div>
+
       <button type="button" id="submitBtn">送信</button>
     </form>
-    <div id="authCameraArea" style="margin-top:15px;">
-      <video id="authVideo" autoplay muted></video>
-      <canvas id="authCanvas" style="display:none;"></canvas>
-    </div>
+
+    <div id="message"></div>
+    <p id="closeInstruction" style="display:none;">このページを閉じてください。</p>
   </div>
-  <div id="message" class="form-group"></div>
+
+  <script src="js/auth.js" type="module"></script>
+  <script src="js/main.js" type="module"></script>
 </body>
 </html>

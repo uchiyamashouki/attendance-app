@@ -1,81 +1,191 @@
+// ✅ 修正後の main.js
+import {
+  showMessage,
+  showLoading,
+  calculateDistance
+} from "./utils.js";
+import {
+  getRecords,
+  saveRecords,
+  getUserData,
+  saveUserData,
+  getUserName,
+  saveUserName
+} from "./storage.js";
+import { getCurrentPosition } from "./location.js";
+import { sendToGoogleForm } from "./form.js";
+import { registerWithFaceID, runWebAuthnAuthentication, isUserAuthenticated } from "./auth.js";
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", function () {
+  const registerFaceBtn = document.getElementById("registerFaceBtn");
+  const authBtn = document.getElementById("authBtn");
+  const resetBtn = document.getElementById("resetBtn");
+  const passwordModal = document.getElementById("passwordModal");
+  const confirmReset = document.getElementById("confirmReset");
+  const submitBtn = document.getElementById("submitBtn");
   const registerBtn = document.getElementById("registerBtn");
-  const registerNameInput = document.getElementById("registerName");
   const registrationForm = document.getElementById("registrationForm");
   const userArea = document.getElementById("userArea");
   const welcomeMsg = document.getElementById("welcomeMsg");
-  const submitBtn = document.getElementById("submitBtn");
-  const message = document.getElementById("message");
+  const closeInstruction = document.getElementById("closeInstruction");
+  const lastAttendanceInfo = document.getElementById("lastAttendanceInfo");
 
-  const userName = localStorage.getItem("userName");
-  if (userName) {
+  const today = new Date().toLocaleDateString();
+  let records = getRecords();
+  let userData = getUserData();
+
+  const userName = getUserName();
+
+  if (registerFaceBtn) {
+    registerFaceBtn.addEventListener("click", registerWithFaceID);
+  }
+
+  if (authBtn) {
+    authBtn.addEventListener("click", runWebAuthnAuthentication);
+  }
+
+  if (userName && registrationForm && userArea && welcomeMsg) {
     registrationForm.style.display = "none";
     userArea.style.display = "block";
-    welcomeMsg.textContent = userName + " さんで記録します";
-    startCamera("authVideo");
-  } else {
-    startCamera("registerVideo");
+    welcomeMsg.textContent = `${userName} さんで記録します！`;
+    updateLastAttendanceInfo();
+    updateAttendanceButtonState();
   }
 
-  registerBtn.addEventListener("click", async () => {
-    const name = registerNameInput.value.trim();
-    if (!name) {
-      showMessage("氏名を入力してください", "error");
-      return;
-    }
-    const descriptor = await captureFace("registerVideo");
-    if (!descriptor) {
-      showMessage("顔を検出できませんでした", "error");
-      return;
-    }
-    localStorage.setItem("userName", name);
-    localStorage.setItem("userDescriptor", JSON.stringify(Array.from(descriptor)));
-    location.reload();
-  });
+  if (registerBtn) {
+    registerBtn.addEventListener("click", function () {
+      const nameInput = document.getElementById("registerName").value.trim();
+      if (!nameInput) {
+        showMessage("氏名を入力してください", "error");
+        return;
+      }
+      saveUserName(nameInput);
+      saveUserData({ name: nameInput });
 
-  submitBtn.addEventListener("click", async () => {
-    const type = document.querySelector("input[name='attendanceType']:checked");
-    if (!type) {
-      showMessage("出欠記録を選択してください", "error");
-      return;
-    }
-
-    const position = await getCurrentPosition();
-    const distance = calculateDistance(position.coords.latitude, position.coords.longitude, 35.662683, 140.008933);
-    if (distance > 0.1) {
-      showMessage("指定位置外からのアクセスです", "error");
-      return;
-    }
-
-    const result = await matchFace("authVideo");
-    if (!result) {
-      showMessage("顔認証に失敗しました", "error");
-      return;
-    }
-
-    showMessage("記録完了しました！", "success");
-  });
-
-  function showMessage(text, type) {
-    message.textContent = text;
-    message.style.color = type === "error" ? "red" : "green";
-  }
-
-  function getCurrentPosition() {
-    return new Promise((resolve, reject) => {
-      navigator.geolocation.getCurrentPosition(resolve, reject);
+      registrationForm.style.display = "none";
+      userArea.style.display = "block";
+      welcomeMsg.textContent = `${nameInput} さんで記録します！`;
+      updateLastAttendanceInfo();
+      updateAttendanceButtonState();
     });
   }
 
-  function calculateDistance(lat1, lon1, lat2, lon2) {
-    const R = 6371;
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = Math.sin(dLat/2) ** 2 +
-              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-              Math.sin(dLon/2) ** 2;
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c;
+  if (resetBtn && passwordModal && confirmReset) {
+    resetBtn.addEventListener("click", function () {
+      passwordModal.style.display = "block";
+    });
+
+    confirmReset.addEventListener("click", function () {
+      const password = document.getElementById("adminPassword").value;
+      if (password === "Kodai1942") {
+        localStorage.clear();
+        location.reload();
+      } else {
+        showMessage("パスワードが正しくありません", "error");
+      }
+    });
+  }
+
+  if (submitBtn) {
+    submitBtn.addEventListener("click", function () {
+      const attendanceType = document.querySelector("input[name='attendanceType']:checked");
+      const currentName = getUserName();
+      if (!currentName || !attendanceType) {
+        showMessage("氏名と練習区分は必須です", "error");
+        return;
+      }
+
+      if (!isUserAuthenticated()) {
+        showMessage("顔認証を実行してください", "error");
+        return;
+      }
+
+      const pitches = document.getElementById("pitches").value;
+      if (pitches && (isNaN(pitches) || parseInt(pitches) < 0)) {
+        showMessage("投球数は0以上の数値で入力してください", "error");
+        return;
+      }
+
+      showLoading(true);
+      getCurrentPosition((lat, lon) => {
+        showLoading(false);
+        const distance = calculateDistance(lat, lon, 35.662683, 140.008933);
+
+        if (distance > 0.1) {
+          showMessage(`球場から離れすぎています（${Math.round(distance * 1000)}m）`, "error");
+          return;
+        }
+
+        const recordList = records[today] || [];
+        if (recordList.length >= 5) {
+          showMessage("本日は既に5回記録済みです", "error");
+          return;
+        }
+
+        const now = new Date();
+        const record = { type: attendanceType.value, time: now.toLocaleTimeString() };
+        recordList.push(record);
+        records[today] = recordList;
+        saveRecords(records);
+
+        if (attendanceType.value === "開始") {
+          userData.lastStart = { date: today, time: record.time };
+        } else {
+          userData.lastEnd = { date: today, time: record.time };
+        }
+        saveUserData(userData);
+
+        updateLastAttendanceInfo();
+        updateAttendanceButtonState();
+
+        sendToGoogleForm({
+          name: currentName,
+          attendance: attendanceType.value,
+          pitches: pitches,
+          latitude: lat,
+          longitude: lon
+        });
+
+        showMessage("記録完了しました！", "success");
+        if (closeInstruction) closeInstruction.style.display = "block";
+      });
+    });
+  }
+
+  function updateLastAttendanceInfo() {
+    if (!lastAttendanceInfo || !userData) return;
+    const today = new Date().toLocaleDateString();
+    let infoText = "";
+
+    if (userData.lastStart?.date === today) {
+      infoText += `本日の開始記録: ${userData.lastStart.time}`;
+    }
+    if (userData.lastEnd?.date === today) {
+      if (infoText) infoText += " / ";
+      infoText += `本日の終了記録: ${userData.lastEnd.time}`;
+    }
+    if (!infoText) {
+      infoText = "本日の記録: なし";
+    }
+    lastAttendanceInfo.textContent = infoText;
+  }
+
+  function updateAttendanceButtonState() {
+    const startRadio = document.getElementById("start");
+    const endRadio = document.getElementById("end");
+    const today = new Date().toLocaleDateString();
+    if (!userData) return;
+
+    if (userData.lastStart?.date === today) {
+      startRadio.disabled = true;
+      endRadio.checked = true;
+    }
+    if (userData.lastEnd?.date === today) {
+      endRadio.disabled = true;
+      startRadio.checked = true;
+    }
+    if (userData.lastStart?.date === today && userData.lastEnd?.date === today) {
+      submitBtn.disabled = true;
+    }
   }
 });
